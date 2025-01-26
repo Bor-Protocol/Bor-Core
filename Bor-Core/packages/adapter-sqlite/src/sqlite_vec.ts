@@ -1,6 +1,6 @@
 import * as sqliteVec from "sqlite-vec";
 import { Database } from "better-sqlite3";
-import { aiKhwarizmiLogger } from "../../core/src/index.ts";
+import { aiKhwarizmiLogger } from "@algo3b/aikhwarizmi/src/index.ts";
 
 // Loads the sqlite-vec extensions into the provided SQLite database
 export function loadVecExtensions(db: Database): void {
