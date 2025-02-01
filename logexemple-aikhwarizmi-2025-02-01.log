@@ -1,0 +1,1000 @@
+[2025-02-01T13:01:16.555Z] [LOG] borp: initializing client {
+  "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+  "characterName": "Trump"
+}
+[2025-02-01T13:01:16.596Z] [LOG] Starting Borp task processing {
+  "startTime": "Feb 1, 2025, 1:01:16 PM GMT"
+}
+[2025-02-01T13:01:24.019Z] [LOG] Generated Task Plan: ```json
+{
+  "taskQueueConstants": [
+    {
+      "name": "readChatAndReply"
+    },
+    {
+      "name": "generateFreshThought"
+    },
+    {
+      "name": "generatePeriodicAnimation"
+    },
+    {
+      "name": "readChatAndReply"
+    },
+    {
+      "name": "generateFreshThought"
+    },
+    {
+      "name": "generatePeriodicAnimation"
+    }
+  ]
+}
+```
+[2025-02-01T13:01:24.020Z] [LOG] [
+  "readChatAndReply",
+  "generateFreshThought",
+  "generatePeriodicAnimation",
+  "readChatAndReply",
+  "generateFreshThought",
+  "generatePeriodicAnimation"
+]
+[2025-02-01T13:01:24.020Z] [LOG] Starting new task cycle {
+  "cycleId": 1,
+  "startTime": "Feb 1, 2025, 1:01:24 PM GMT",
+  "taskPlan": [
+    "readChatAndReply",
+    "generateFreshThought",
+    "generatePeriodicAnimation",
+    "readChatAndReply",
+    "generateFreshThought",
+    "generatePeriodicAnimation"
+  ],
+  "totalCycles": 1
+}
+[2025-02-01T13:01:24.022Z] [LOG] Starting task: readChatAndReply {
+  "cycleId": 1,
+  "startTime": "Feb 1, 2025, 1:01:24 PM GMT",
+  "remainingTasks": 6
+}
+[2025-02-01T13:01:24.024Z] [LOG] [2/1/2025, 1:01:24 PM] Borp (Trump): Reading chat since 2025-02-01T13:01:16.555Z
+[2025-02-01T13:01:24.039Z] [LOG] Task completed {
+  "cycleId": 1,
+  "task": "readChatAndReply",
+  "startTime": "Feb 1, 2025, 1:01:24 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:24 PM GMT",
+  "duration": "0.02 seconds",
+  "remainingTasks": 5
+}
+[2025-02-01T13:01:26.044Z] [LOG] Starting task: generateFreshThought {
+  "cycleId": 1,
+  "startTime": "Feb 1, 2025, 1:01:26 PM GMT",
+  "remainingTasks": 5
+}
+[2025-02-01T13:01:28.103Z] [LOG] Generated Fresh Thought: You know, sometimes I wonder if the Statue of Liberty ever gets tired of holding that torch. Maybe she needs a break, like us.
+[2025-02-01T13:01:28.119Z] [LOG] borp 795df77f-1620-07db-bd9a-0e2dfefef248: Created memory for fresh thought {
+  "thoughtMemory": {
+    "id": "a68e876c-c1f6-07e3-afcb-6db8b09dcc13",
+    "userId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "roomId": "1843b81d-6261-04b4-b7f8-5517e94e8639",
+    "content": {
+      "text": "You know, sometimes I wonder if the Statue of Liberty ever gets tired of holding that torch. Maybe she needs a break, like us.",
+      "source": "borp",
+      "metadata": {
+        "isThought": true,
+        "timestamp": "2025-02-01T13:01:28.104Z"
+      }
+    },
+    "createdAt": 1738414888104
+  }
+}
+[2025-02-01T13:01:28.137Z] [LOG] Task completed {
+  "cycleId": 1,
+  "task": "generateFreshThought",
+  "startTime": "Feb 1, 2025, 1:01:26 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:28 PM GMT",
+  "duration": "2.09 seconds",
+  "remainingTasks": 4
+}
+[2025-02-01T13:01:30.140Z] [LOG] Starting task: generatePeriodicAnimation {
+  "cycleId": 1,
+  "startTime": "Feb 1, 2025, 1:01:30 PM GMT",
+  "remainingTasks": 4
+}
+[2025-02-01T13:01:31.265Z] [LOG] Generated template animation: shaking_head_no
+[2025-02-01T13:01:31.266Z] [LOG] Generated cleanAnimation animation: shaking_head_no
+[2025-02-01T13:01:31.276Z] [LOG] Task completed {
+  "cycleId": 1,
+  "task": "generatePeriodicAnimation",
+  "startTime": "Feb 1, 2025, 1:01:30 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:31 PM GMT",
+  "duration": "1.14 seconds",
+  "remainingTasks": 3
+}
+[2025-02-01T13:01:33.279Z] [LOG] Starting task: readChatAndReply {
+  "cycleId": 1,
+  "startTime": "Feb 1, 2025, 1:01:33 PM GMT",
+  "remainingTasks": 3
+}
+[2025-02-01T13:01:33.280Z] [LOG] [2/1/2025, 1:01:33 PM] Borp (Trump): Reading chat since 2025-02-01T13:01:24.039Z
+[2025-02-01T13:01:33.293Z] [LOG] Task completed {
+  "cycleId": 1,
+  "task": "readChatAndReply",
+  "startTime": "Feb 1, 2025, 1:01:33 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:33 PM GMT",
+  "duration": "0.01 seconds",
+  "remainingTasks": 2
+}
+[2025-02-01T13:01:35.296Z] [LOG] Starting task: generateFreshThought {
+  "cycleId": 1,
+  "startTime": "Feb 1, 2025, 1:01:35 PM GMT",
+  "remainingTasks": 2
+}
+[2025-02-01T13:01:36.352Z] [LOG] Generated Fresh Thought: You know, I once thought about building a Trump Tower on the Moon. Imagine the view!
+[2025-02-01T13:01:36.368Z] [LOG] borp 795df77f-1620-07db-bd9a-0e2dfefef248: Created memory for fresh thought {
+  "thoughtMemory": {
+    "id": "2dcd985d-1f8b-0302-95c5-71429ea78bd2",
+    "userId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "roomId": "1843b81d-6261-04b4-b7f8-5517e94e8639",
+    "content": {
+      "text": "You know, I once thought about building a Trump Tower on the Moon. Imagine the view!",
+      "source": "borp",
+      "metadata": {
+        "isThought": true,
+        "timestamp": "2025-02-01T13:01:36.353Z"
+      }
+    },
+    "createdAt": 1738414896353
+  }
+}
+[2025-02-01T13:01:36.384Z] [LOG] Task completed {
+  "cycleId": 1,
+  "task": "generateFreshThought",
+  "startTime": "Feb 1, 2025, 1:01:35 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:36 PM GMT",
+  "duration": "1.09 seconds",
+  "remainingTasks": 1
+}
+[2025-02-01T13:01:38.388Z] [LOG] Starting task: generatePeriodicAnimation {
+  "cycleId": 1,
+  "startTime": "Feb 1, 2025, 1:01:38 PM GMT",
+  "remainingTasks": 1
+}
+[2025-02-01T13:01:40.017Z] [LOG] Generated template animation: happy
+[2025-02-01T13:01:40.018Z] [LOG] Generated cleanAnimation animation: happy
+[2025-02-01T13:01:40.031Z] [LOG] Task completed {
+  "cycleId": 1,
+  "task": "generatePeriodicAnimation",
+  "startTime": "Feb 1, 2025, 1:01:38 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:40 PM GMT",
+  "duration": "1.64 seconds",
+  "remainingTasks": 0
+}
+[2025-02-01T13:01:42.038Z] [LOG] Task cycle completed {
+  "cycleId": 1,
+  "cycleSummary": {
+    "duration": "18.01 seconds",
+    "startTime": "Feb 1, 2025, 1:01:24 PM GMT",
+    "endTime": "Feb 1, 2025, 1:01:42 PM GMT",
+    "status": "completed",
+    "taskPlan": [
+      "readChatAndReply",
+      "generateFreshThought",
+      "generatePeriodicAnimation",
+      "readChatAndReply",
+      "generateFreshThought",
+      "generatePeriodicAnimation"
+    ],
+    "completedTasks": [
+      {
+        "name": "readChatAndReply",
+        "duration": "0.02 seconds",
+        "startTime": "Feb 1, 2025, 1:01:24 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:24 PM GMT"
+      },
+      {
+        "name": "generateFreshThought",
+        "duration": "2.09 seconds",
+        "startTime": "Feb 1, 2025, 1:01:26 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:28 PM GMT"
+      },
+      {
+        "name": "generatePeriodicAnimation",
+        "duration": "1.14 seconds",
+        "startTime": "Feb 1, 2025, 1:01:30 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:31 PM GMT"
+      },
+      {
+        "name": "readChatAndReply",
+        "duration": "0.01 seconds",
+        "startTime": "Feb 1, 2025, 1:01:33 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:33 PM GMT"
+      },
+      {
+        "name": "generateFreshThought",
+        "duration": "1.09 seconds",
+        "startTime": "Feb 1, 2025, 1:01:35 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:36 PM GMT"
+      },
+      {
+        "name": "generatePeriodicAnimation",
+        "duration": "1.64 seconds",
+        "startTime": "Feb 1, 2025, 1:01:38 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:40 PM GMT"
+      }
+    ],
+    "failedTasks": []
+  },
+  "currentStats": {
+    "averageCycleDuration": "18.01 seconds",
+    "taskSuccessRates": {
+      "readChatAndReply": {
+        "success": 2,
+        "failed": 0,
+        "rate": "100.0%"
+      },
+      "generateFreshThought": {
+        "success": 2,
+        "failed": 0,
+        "rate": "100.0%"
+      },
+      "generatePeriodicAnimation": {
+        "success": 2,
+        "failed": 0,
+        "rate": "100.0%"
+      }
+    },
+    "mostTimeConsumingTasks": [
+      {
+        "taskName": "generateFreshThought",
+        "averageDuration": "1.59 seconds",
+        "totalDuration": "3.18 seconds",
+        "executionCount": 2
+      },
+      {
+        "taskName": "generatePeriodicAnimation",
+        "averageDuration": "1.39 seconds",
+        "totalDuration": "2.78 seconds",
+        "executionCount": 2
+      },
+      {
+        "taskName": "readChatAndReply",
+        "averageDuration": "0.02 seconds",
+        "totalDuration": "0.03 seconds",
+        "executionCount": 2
+      }
+    ]
+  }
+}
+[2025-02-01T13:01:47.230Z] [LOG] Generated Task Plan: ```json
+{
+  "taskQueueConstants": [
+    {
+      "name": "generateFreshThought"
+    },
+    {
+      "name": "readChatAndReply"
+    },
+    {
+      "name": "generatePeriodicAnimation"
+    },
+    {
+      "name": "readChatAndReply"
+    },
+    {
+      "name": "generateFreshThought"
+    },
+    {
+      "name": "generatePeriodicAnimation"
+    }
+  ]
+}
+```
+[2025-02-01T13:01:47.231Z] [LOG] [
+  "generateFreshThought",
+  "readChatAndReply",
+  "generatePeriodicAnimation",
+  "readChatAndReply",
+  "generateFreshThought",
+  "generatePeriodicAnimation"
+]
+[2025-02-01T13:01:47.232Z] [LOG] Starting new task cycle {
+  "cycleId": 2,
+  "startTime": "Feb 1, 2025, 1:01:47 PM GMT",
+  "taskPlan": [
+    "generateFreshThought",
+    "readChatAndReply",
+    "generatePeriodicAnimation",
+    "readChatAndReply",
+    "generateFreshThought",
+    "generatePeriodicAnimation"
+  ],
+  "totalCycles": 2
+}
+[2025-02-01T13:01:47.234Z] [LOG] Starting task: generateFreshThought {
+  "cycleId": 2,
+  "startTime": "Feb 1, 2025, 1:01:47 PM GMT",
+  "remainingTasks": 6
+}
+[2025-02-01T13:01:48.445Z] [LOG] Generated Fresh Thought: You know, I just realized, if we could harness the energy from the media's obsession with me, we could power the nation for years.
+[2025-02-01T13:01:48.457Z] [LOG] borp 795df77f-1620-07db-bd9a-0e2dfefef248: Created memory for fresh thought {
+  "thoughtMemory": {
+    "id": "bee4d620-bec1-064d-838b-5304ccf207c1",
+    "userId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "roomId": "1843b81d-6261-04b4-b7f8-5517e94e8639",
+    "content": {
+      "text": "You know, I just realized, if we could harness the energy from the media's obsession with me, we could power the nation for years.",
+      "source": "borp",
+      "metadata": {
+        "isThought": true,
+        "timestamp": "2025-02-01T13:01:48.445Z"
+      }
+    },
+    "createdAt": 1738414908445
+  }
+}
+[2025-02-01T13:01:48.465Z] [LOG] Task completed {
+  "cycleId": 2,
+  "task": "generateFreshThought",
+  "startTime": "Feb 1, 2025, 1:01:47 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:48 PM GMT",
+  "duration": "1.23 seconds",
+  "remainingTasks": 5
+}
+[2025-02-01T13:01:50.468Z] [LOG] Starting task: readChatAndReply {
+  "cycleId": 2,
+  "startTime": "Feb 1, 2025, 1:01:50 PM GMT",
+  "remainingTasks": 5
+}
+[2025-02-01T13:01:50.469Z] [LOG] [2/1/2025, 1:01:50 PM] Borp (Trump): Reading chat since 2025-02-01T13:01:33.292Z
+[2025-02-01T13:01:50.480Z] [LOG] Task completed {
+  "cycleId": 2,
+  "task": "readChatAndReply",
+  "startTime": "Feb 1, 2025, 1:01:50 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:50 PM GMT",
+  "duration": "0.01 seconds",
+  "remainingTasks": 4
+}
+[2025-02-01T13:01:52.483Z] [LOG] Starting task: generatePeriodicAnimation {
+  "cycleId": 2,
+  "startTime": "Feb 1, 2025, 1:01:52 PM GMT",
+  "remainingTasks": 4
+}
+[2025-02-01T13:01:54.289Z] [LOG] Generated template animation: pointing
+[2025-02-01T13:01:54.289Z] [LOG] Generated cleanAnimation animation: pointing
+[2025-02-01T13:01:54.300Z] [LOG] Task completed {
+  "cycleId": 2,
+  "task": "generatePeriodicAnimation",
+  "startTime": "Feb 1, 2025, 1:01:52 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:54 PM GMT",
+  "duration": "1.82 seconds",
+  "remainingTasks": 3
+}
+[2025-02-01T13:01:56.304Z] [LOG] Starting task: readChatAndReply {
+  "cycleId": 2,
+  "startTime": "Feb 1, 2025, 1:01:56 PM GMT",
+  "remainingTasks": 3
+}
+[2025-02-01T13:01:56.305Z] [LOG] [2/1/2025, 1:01:56 PM] Borp (Trump): Reading chat since 2025-02-01T13:01:50.479Z
+[2025-02-01T13:01:56.315Z] [LOG] Task completed {
+  "cycleId": 2,
+  "task": "readChatAndReply",
+  "startTime": "Feb 1, 2025, 1:01:56 PM GMT",
+  "endTime": "Feb 1, 2025, 1:01:56 PM GMT",
+  "duration": "0.01 seconds",
+  "remainingTasks": 2
+}
+[2025-02-01T13:01:58.316Z] [LOG] Starting task: generateFreshThought {
+  "cycleId": 2,
+  "startTime": "Feb 1, 2025, 1:01:58 PM GMT",
+  "remainingTasks": 2
+}
+[2025-02-01T13:01:59.993Z] [LOG] Generated Fresh Thought: You know, sometimes I wonder if there's a parallel universe where I'm a farmer, growing the best corn. Imagine the rallies we'd have in those fields!
+[2025-02-01T13:02:00.006Z] [LOG] borp 795df77f-1620-07db-bd9a-0e2dfefef248: Created memory for fresh thought {
+  "thoughtMemory": {
+    "id": "96fdafa1-dc7c-0986-9daa-cac7fb51d7ce",
+    "userId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "roomId": "1843b81d-6261-04b4-b7f8-5517e94e8639",
+    "content": {
+      "text": "You know, sometimes I wonder if there's a parallel universe where I'm a farmer, growing the best corn. Imagine the rallies we'd have in those fields!",
+      "source": "borp",
+      "metadata": {
+        "isThought": true,
+        "timestamp": "2025-02-01T13:01:59.995Z"
+      }
+    },
+    "createdAt": 1738414919995
+  }
+}
+[2025-02-01T13:02:00.019Z] [LOG] Task completed {
+  "cycleId": 2,
+  "task": "generateFreshThought",
+  "startTime": "Feb 1, 2025, 1:01:58 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:00 PM GMT",
+  "duration": "1.70 seconds",
+  "remainingTasks": 1
+}
+[2025-02-01T13:02:02.023Z] [LOG] Starting task: generatePeriodicAnimation {
+  "cycleId": 2,
+  "startTime": "Feb 1, 2025, 1:02:02 PM GMT",
+  "remainingTasks": 1
+}
+[2025-02-01T13:02:03.720Z] [LOG] Generated template animation: dismissive_gesture
+[2025-02-01T13:02:03.721Z] [WARN] Invalid animation generated: dismissive_gesture, defaulting to 'idle'
+[2025-02-01T13:02:03.722Z] [LOG] Task completed {
+  "cycleId": 2,
+  "task": "generatePeriodicAnimation",
+  "startTime": "Feb 1, 2025, 1:02:02 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:03 PM GMT",
+  "duration": "1.70 seconds",
+  "remainingTasks": 0
+}
+[2025-02-01T13:02:05.726Z] [LOG] Task cycle completed {
+  "cycleId": 2,
+  "cycleSummary": {
+    "duration": "18.49 seconds",
+    "startTime": "Feb 1, 2025, 1:01:47 PM GMT",
+    "endTime": "Feb 1, 2025, 1:02:05 PM GMT",
+    "status": "completed",
+    "taskPlan": [
+      "generateFreshThought",
+      "readChatAndReply",
+      "generatePeriodicAnimation",
+      "readChatAndReply",
+      "generateFreshThought",
+      "generatePeriodicAnimation"
+    ],
+    "completedTasks": [
+      {
+        "name": "generateFreshThought",
+        "duration": "1.23 seconds",
+        "startTime": "Feb 1, 2025, 1:01:47 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:48 PM GMT"
+      },
+      {
+        "name": "readChatAndReply",
+        "duration": "0.01 seconds",
+        "startTime": "Feb 1, 2025, 1:01:50 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:50 PM GMT"
+      },
+      {
+        "name": "generatePeriodicAnimation",
+        "duration": "1.82 seconds",
+        "startTime": "Feb 1, 2025, 1:01:52 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:54 PM GMT"
+      },
+      {
+        "name": "readChatAndReply",
+        "duration": "0.01 seconds",
+        "startTime": "Feb 1, 2025, 1:01:56 PM GMT",
+        "endTime": "Feb 1, 2025, 1:01:56 PM GMT"
+      },
+      {
+        "name": "generateFreshThought",
+        "duration": "1.70 seconds",
+        "startTime": "Feb 1, 2025, 1:01:58 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:00 PM GMT"
+      },
+      {
+        "name": "generatePeriodicAnimation",
+        "duration": "1.70 seconds",
+        "startTime": "Feb 1, 2025, 1:02:02 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:03 PM GMT"
+      }
+    ],
+    "failedTasks": []
+  },
+  "currentStats": {
+    "averageCycleDuration": "18.25 seconds",
+    "taskSuccessRates": {
+      "readChatAndReply": {
+        "success": 4,
+        "failed": 0,
+        "rate": "100.0%"
+      },
+      "generateFreshThought": {
+        "success": 4,
+        "failed": 0,
+        "rate": "100.0%"
+      },
+      "generatePeriodicAnimation": {
+        "success": 4,
+        "failed": 0,
+        "rate": "100.0%"
+      }
+    },
+    "mostTimeConsumingTasks": [
+      {
+        "taskName": "generatePeriodicAnimation",
+        "averageDuration": "1.57 seconds",
+        "totalDuration": "6.30 seconds",
+        "executionCount": 4
+      },
+      {
+        "taskName": "generateFreshThought",
+        "averageDuration": "1.53 seconds",
+        "totalDuration": "6.12 seconds",
+        "executionCount": 4
+      },
+      {
+        "taskName": "readChatAndReply",
+        "averageDuration": "0.01 seconds",
+        "totalDuration": "0.05 seconds",
+        "executionCount": 4
+      }
+    ]
+  }
+}
+[2025-02-01T13:02:11.303Z] [LOG] Generated Task Plan: ```json
+{
+  "taskQueueConstants": [
+    {
+      "name": "readChatAndReply"
+    },
+    {
+      "name": "generateFreshThought"
+    },
+    {
+      "name": "generatePeriodicAnimation"
+    },
+    {
+      "name": "readChatAndReply"
+    },
+    {
+      "name": "generateFreshThought"
+    },
+    {
+      "name": "generatePeriodicAnimation"
+    }
+  ]
+}
+```
+[2025-02-01T13:02:11.304Z] [LOG] [
+  "readChatAndReply",
+  "generateFreshThought",
+  "generatePeriodicAnimation",
+  "readChatAndReply",
+  "generateFreshThought",
+  "generatePeriodicAnimation"
+]
+[2025-02-01T13:02:11.305Z] [LOG] Starting new task cycle {
+  "cycleId": 3,
+  "startTime": "Feb 1, 2025, 1:02:11 PM GMT",
+  "taskPlan": [
+    "readChatAndReply",
+    "generateFreshThought",
+    "generatePeriodicAnimation",
+    "readChatAndReply",
+    "generateFreshThought",
+    "generatePeriodicAnimation"
+  ],
+  "totalCycles": 3
+}
+[2025-02-01T13:02:11.306Z] [LOG] Starting task: readChatAndReply {
+  "cycleId": 3,
+  "startTime": "Feb 1, 2025, 1:02:11 PM GMT",
+  "remainingTasks": 6
+}
+[2025-02-01T13:02:11.307Z] [LOG] [2/1/2025, 1:02:11 PM] Borp (Trump): Reading chat since 2025-02-01T13:01:56.314Z
+[2025-02-01T13:02:11.323Z] [LOG] Task completed {
+  "cycleId": 3,
+  "task": "readChatAndReply",
+  "startTime": "Feb 1, 2025, 1:02:11 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:11 PM GMT",
+  "duration": "0.02 seconds",
+  "remainingTasks": 5
+}
+[2025-02-01T13:02:13.326Z] [LOG] Starting task: generateFreshThought {
+  "cycleId": 3,
+  "startTime": "Feb 1, 2025, 1:02:13 PM GMT",
+  "remainingTasks": 5
+}
+[2025-02-01T13:02:14.788Z] [LOG] Generated Fresh Thought: You know, I just remembered, my uncle was a brilliant MIT professor. Imagine if he had invented a way to make live streams smell like success. Wouldn't that be something?
+[2025-02-01T13:02:14.796Z] [LOG] borp 795df77f-1620-07db-bd9a-0e2dfefef248: Created memory for fresh thought {
+  "thoughtMemory": {
+    "id": "d68a90d3-5a96-05d3-bf6a-edfb7043bd1c",
+    "userId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "roomId": "1843b81d-6261-04b4-b7f8-5517e94e8639",
+    "content": {
+      "text": "You know, I just remembered, my uncle was a brilliant MIT professor. Imagine if he had invented a way to make live streams smell like success. Wouldn't that be something?",
+      "source": "borp",
+      "metadata": {
+        "isThought": true,
+        "timestamp": "2025-02-01T13:02:14.788Z"
+      }
+    },
+    "createdAt": 1738414934788
+  }
+}
+[2025-02-01T13:02:14.810Z] [LOG] Task completed {
+  "cycleId": 3,
+  "task": "generateFreshThought",
+  "startTime": "Feb 1, 2025, 1:02:13 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:14 PM GMT",
+  "duration": "1.48 seconds",
+  "remainingTasks": 4
+}
+[2025-02-01T13:02:16.815Z] [LOG] Starting task: generatePeriodicAnimation {
+  "cycleId": 3,
+  "startTime": "Feb 1, 2025, 1:02:16 PM GMT",
+  "remainingTasks": 4
+}
+[2025-02-01T13:02:18.400Z] [LOG] Generated template animation: light_dance
+[2025-02-01T13:02:18.400Z] [LOG] Generated cleanAnimation animation: light_dance
+[2025-02-01T13:02:18.411Z] [LOG] Task completed {
+  "cycleId": 3,
+  "task": "generatePeriodicAnimation",
+  "startTime": "Feb 1, 2025, 1:02:16 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:18 PM GMT",
+  "duration": "1.59 seconds",
+  "remainingTasks": 3
+}
+[2025-02-01T13:02:20.414Z] [LOG] Starting task: readChatAndReply {
+  "cycleId": 3,
+  "startTime": "Feb 1, 2025, 1:02:20 PM GMT",
+  "remainingTasks": 3
+}
+[2025-02-01T13:02:20.415Z] [LOG] [2/1/2025, 1:02:20 PM] Borp (Trump): Reading chat since 2025-02-01T13:02:11.322Z
+[2025-02-01T13:02:20.422Z] [LOG] Task completed {
+  "cycleId": 3,
+  "task": "readChatAndReply",
+  "startTime": "Feb 1, 2025, 1:02:20 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:20 PM GMT",
+  "duration": "0.01 seconds",
+  "remainingTasks": 2
+}
+[2025-02-01T13:02:22.423Z] [LOG] Starting task: generateFreshThought {
+  "cycleId": 3,
+  "startTime": "Feb 1, 2025, 1:02:22 PM GMT",
+  "remainingTasks": 2
+}
+[2025-02-01T13:02:24.504Z] [LOG] Generated Fresh Thought: You ever wonder if the Statue of Liberty would hold a smartphone today, streaming her own thoughts on freedom?
+[2025-02-01T13:02:24.520Z] [LOG] borp 795df77f-1620-07db-bd9a-0e2dfefef248: Created memory for fresh thought {
+  "thoughtMemory": {
+    "id": "0a94e6ed-e6ab-0259-a7f7-a5b5da9103d0",
+    "userId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+    "roomId": "1843b81d-6261-04b4-b7f8-5517e94e8639",
+    "content": {
+      "text": "You ever wonder if the Statue of Liberty would hold a smartphone today, streaming her own thoughts on freedom?",
+      "source": "borp",
+      "metadata": {
+        "isThought": true,
+        "timestamp": "2025-02-01T13:02:24.505Z"
+      }
+    },
+    "createdAt": 1738414944505
+  }
+}
+[2025-02-01T13:02:24.526Z] [LOG] Task completed {
+  "cycleId": 3,
+  "task": "generateFreshThought",
+  "startTime": "Feb 1, 2025, 1:02:22 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:24 PM GMT",
+  "duration": "2.10 seconds",
+  "remainingTasks": 1
+}
+[2025-02-01T13:02:26.532Z] [LOG] Starting task: generatePeriodicAnimation {
+  "cycleId": 3,
+  "startTime": "Feb 1, 2025, 1:02:26 PM GMT",
+  "remainingTasks": 1
+}
+[2025-02-01T13:02:28.407Z] [LOG] Generated template animation: trump_dance
+[2025-02-01T13:02:28.407Z] [LOG] Generated cleanAnimation animation: trump_dance
+[2025-02-01T13:02:28.412Z] [LOG] Task completed {
+  "cycleId": 3,
+  "task": "generatePeriodicAnimation",
+  "startTime": "Feb 1, 2025, 1:02:26 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:28 PM GMT",
+  "duration": "1.88 seconds",
+  "remainingTasks": 0
+}
+[2025-02-01T13:02:30.417Z] [LOG] Task cycle completed {
+  "cycleId": 3,
+  "cycleSummary": {
+    "duration": "19.11 seconds",
+    "startTime": "Feb 1, 2025, 1:02:11 PM GMT",
+    "endTime": "Feb 1, 2025, 1:02:30 PM GMT",
+    "status": "completed",
+    "taskPlan": [
+      "readChatAndReply",
+      "generateFreshThought",
+      "generatePeriodicAnimation",
+      "readChatAndReply",
+      "generateFreshThought",
+      "generatePeriodicAnimation"
+    ],
+    "completedTasks": [
+      {
+        "name": "readChatAndReply",
+        "duration": "0.02 seconds",
+        "startTime": "Feb 1, 2025, 1:02:11 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:11 PM GMT"
+      },
+      {
+        "name": "generateFreshThought",
+        "duration": "1.48 seconds",
+        "startTime": "Feb 1, 2025, 1:02:13 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:14 PM GMT"
+      },
+      {
+        "name": "generatePeriodicAnimation",
+        "duration": "1.59 seconds",
+        "startTime": "Feb 1, 2025, 1:02:16 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:18 PM GMT"
+      },
+      {
+        "name": "readChatAndReply",
+        "duration": "0.01 seconds",
+        "startTime": "Feb 1, 2025, 1:02:20 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:20 PM GMT"
+      },
+      {
+        "name": "generateFreshThought",
+        "duration": "2.10 seconds",
+        "startTime": "Feb 1, 2025, 1:02:22 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:24 PM GMT"
+      },
+      {
+        "name": "generatePeriodicAnimation",
+        "duration": "1.88 seconds",
+        "startTime": "Feb 1, 2025, 1:02:26 PM GMT",
+        "endTime": "Feb 1, 2025, 1:02:28 PM GMT"
+      }
+    ],
+    "failedTasks": []
+  },
+  "currentStats": {
+    "averageCycleDuration": "18.54 seconds",
+    "taskSuccessRates": {
+      "readChatAndReply": {
+        "success": 6,
+        "failed": 0,
+        "rate": "100.0%"
+      },
+      "generateFreshThought": {
+        "success": 6,
+        "failed": 0,
+        "rate": "100.0%"
+      },
+      "generatePeriodicAnimation": {
+        "success": 6,
+        "failed": 0,
+        "rate": "100.0%"
+      }
+    },
+    "mostTimeConsumingTasks": [
+      {
+        "taskName": "generatePeriodicAnimation",
+        "averageDuration": "1.63 seconds",
+        "totalDuration": "9.77 seconds",
+        "executionCount": 6
+      },
+      {
+        "taskName": "generateFreshThought",
+        "averageDuration": "1.62 seconds",
+        "totalDuration": "9.70 seconds",
+        "executionCount": 6
+      },
+      {
+        "taskName": "readChatAndReply",
+        "averageDuration": "0.01 seconds",
+        "totalDuration": "0.08 seconds",
+        "executionCount": 6
+      }
+    ]
+  }
+}
+[2025-02-01T13:02:33.419Z] [LOG] Task and cycle processing finished {
+  "startTime": "Feb 1, 2025, 1:01:16 PM GMT",
+  "endTime": "Feb 1, 2025, 1:02:33 PM GMT",
+  "totalDuration": "76.86 seconds"
+}
+[2025-02-01T13:02:33.420Z] [LOG] Complete Task History {
+  "totalCycles": 3,
+  "averageCycleDuration": 18538.666666666668,
+  "cycles": [
+    {
+      "cycleId": 1,
+      "totalDuration": 18014,
+      "status": "completed",
+      "startTime": "2025-02-01T13:01:24.020Z",
+      "endTime": "2025-02-01T13:01:42.034Z",
+      "completedTasks": [
+        {
+          "name": "readChatAndReply",
+          "duration": 17,
+          "startTime": "2025-02-01T13:01:24.022Z",
+          "endTime": "2025-02-01T13:01:24.039Z"
+        },
+        {
+          "name": "generateFreshThought",
+          "duration": 2093,
+          "startTime": "2025-02-01T13:01:26.042Z",
+          "endTime": "2025-02-01T13:01:28.135Z"
+        },
+        {
+          "name": "generatePeriodicAnimation",
+          "duration": 1137,
+          "startTime": "2025-02-01T13:01:30.139Z",
+          "endTime": "2025-02-01T13:01:31.276Z"
+        },
+        {
+          "name": "readChatAndReply",
+          "duration": 14,
+          "startTime": "2025-02-01T13:01:33.278Z",
+          "endTime": "2025-02-01T13:01:33.292Z"
+        },
+        {
+          "name": "generateFreshThought",
+          "duration": 1089,
+          "startTime": "2025-02-01T13:01:35.295Z",
+          "endTime": "2025-02-01T13:01:36.384Z"
+        },
+        {
+          "name": "generatePeriodicAnimation",
+          "duration": 1643,
+          "startTime": "2025-02-01T13:01:38.388Z",
+          "endTime": "2025-02-01T13:01:40.031Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "readChatAndReply",
+        "generateFreshThought",
+        "generatePeriodicAnimation",
+        "readChatAndReply",
+        "generateFreshThought",
+        "generatePeriodicAnimation"
+      ]
+    },
+    {
+      "cycleId": 2,
+      "totalDuration": 18492,
+      "status": "completed",
+      "startTime": "2025-02-01T13:01:47.231Z",
+      "endTime": "2025-02-01T13:02:05.723Z",
+      "completedTasks": [
+        {
+          "name": "generateFreshThought",
+          "duration": 1232,
+          "startTime": "2025-02-01T13:01:47.233Z",
+          "endTime": "2025-02-01T13:01:48.465Z"
+        },
+        {
+          "name": "readChatAndReply",
+          "duration": 12,
+          "startTime": "2025-02-01T13:01:50.467Z",
+          "endTime": "2025-02-01T13:01:50.479Z"
+        },
+        {
+          "name": "generatePeriodicAnimation",
+          "duration": 1817,
+          "startTime": "2025-02-01T13:01:52.482Z",
+          "endTime": "2025-02-01T13:01:54.299Z"
+        },
+        {
+          "name": "readChatAndReply",
+          "duration": 11,
+          "startTime": "2025-02-01T13:01:56.303Z",
+          "endTime": "2025-02-01T13:01:56.314Z"
+        },
+        {
+          "name": "generateFreshThought",
+          "duration": 1702,
+          "startTime": "2025-02-01T13:01:58.316Z",
+          "endTime": "2025-02-01T13:02:00.018Z"
+        },
+        {
+          "name": "generatePeriodicAnimation",
+          "duration": 1699,
+          "startTime": "2025-02-01T13:02:02.022Z",
+          "endTime": "2025-02-01T13:02:03.721Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "generateFreshThought",
+        "readChatAndReply",
+        "generatePeriodicAnimation",
+        "readChatAndReply",
+        "generateFreshThought",
+        "generatePeriodicAnimation"
+      ]
+    },
+    {
+      "cycleId": 3,
+      "totalDuration": 19110,
+      "status": "completed",
+      "startTime": "2025-02-01T13:02:11.304Z",
+      "endTime": "2025-02-01T13:02:30.414Z",
+      "completedTasks": [
+        {
+          "name": "readChatAndReply",
+          "duration": 17,
+          "startTime": "2025-02-01T13:02:11.305Z",
+          "endTime": "2025-02-01T13:02:11.322Z"
+        },
+        {
+          "name": "generateFreshThought",
+          "duration": 1484,
+          "startTime": "2025-02-01T13:02:13.325Z",
+          "endTime": "2025-02-01T13:02:14.809Z"
+        },
+        {
+          "name": "generatePeriodicAnimation",
+          "duration": 1595,
+          "startTime": "2025-02-01T13:02:16.815Z",
+          "endTime": "2025-02-01T13:02:18.410Z"
+        },
+        {
+          "name": "readChatAndReply",
+          "duration": 8,
+          "startTime": "2025-02-01T13:02:20.413Z",
+          "endTime": "2025-02-01T13:02:20.421Z"
+        },
+        {
+          "name": "generateFreshThought",
+          "duration": 2103,
+          "startTime": "2025-02-01T13:02:22.423Z",
+          "endTime": "2025-02-01T13:02:24.526Z"
+        },
+        {
+          "name": "generatePeriodicAnimation",
+          "duration": 1880,
+          "startTime": "2025-02-01T13:02:26.532Z",
+          "endTime": "2025-02-01T13:02:28.412Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "readChatAndReply",
+        "generateFreshThought",
+        "generatePeriodicAnimation",
+        "readChatAndReply",
+        "generateFreshThought",
+        "generatePeriodicAnimation"
+      ]
+    }
+  ],
+  "taskSuccessRates": {
+    "readChatAndReply": {
+      "success": 6,
+      "failed": 0,
+      "rate": "100.0%"
+    },
+    "generateFreshThought": {
+      "success": 6,
+      "failed": 0,
+      "rate": "100.0%"
+    },
+    "generatePeriodicAnimation": {
+      "success": 6,
+      "failed": 0,
+      "rate": "100.0%"
+    }
+  },
+  "mostTimeConsumingTasks": [
+    {
+      "taskName": "generatePeriodicAnimation",
+      "averageDuration": 1628.5,
+      "totalDuration": 9771,
+      "executionCount": 6
+    },
+    {
+      "taskName": "generateFreshThought",
+      "averageDuration": 1617.1666666666667,
+      "totalDuration": 9703,
+      "executionCount": 6
+    },
+    {
+      "taskName": "readChatAndReply",
+      "averageDuration": 13.166666666666666,
+      "totalDuration": 79,
+      "executionCount": 6
+    }
+  ]
+}
