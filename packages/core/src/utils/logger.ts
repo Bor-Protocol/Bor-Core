@@ -1,6 +1,22 @@
+import fs from 'fs';
+import path from 'path';
+
 class AiKhwarizmiLogger {
+    private logFile: fs.WriteStream;
+    
     constructor() {
         this.verbose = process.env.verbose === "true" || false;
+        
+        // Create logs directory if it doesn't exist
+        const logsDir = path.join(process.cwd(), 'logs');
+        if (!fs.existsSync(logsDir)) {
+            fs.mkdirSync(logsDir);
+        }
+        
+        // Create or append to log file with timestamp
+        const date = new Date().toISOString().split('T')[0];
+        const logPath = path.join(logsDir, `aikhwarizmi-${date}.log`);
+        this.logFile = fs.createWriteStream(logPath, { flags: 'a' });
     }
 
     verbose = false;
@@ -97,10 +113,15 @@ class AiKhwarizmiLogger {
     }
     
     log(...strings) {
+        // Existing console output
         const fg = "white";
         const bg = "";
         const icon = "\u25ce";
         const groupTile = ` ${this.logsTitle}`;
+        
+        // Add file output
+        this.writeToFile('LOG', ...strings);
+        
         if (strings.length > 1) {
             const c = this.#getColor(fg, bg);
             console.group(c, (this.useIcons ? icon : "") + groupTile);
@@ -123,6 +144,10 @@ class AiKhwarizmiLogger {
         }
     }
     warn(...strings) {
+        // Add file output
+        this.writeToFile('WARN', ...strings);
+        
+        // Existing console output
         const fg = "yellow";
         const bg = "";
         const icon = "\u26a0";
@@ -149,6 +174,10 @@ class AiKhwarizmiLogger {
         }
     }
     error(...strings) {
+        // Add file output
+        this.writeToFile('ERROR', ...strings);
+        
+        // Existing console output
         const fg = "red";
         const bg = "";
         const icon = "\u26D4";
@@ -175,6 +204,10 @@ class AiKhwarizmiLogger {
         }
     }
     info(...strings) {
+        // Add file output
+        this.writeToFile('INFO', ...strings);
+        
+        // Existing console output
         const fg = "blue";
         const bg = "";
         const icon = "\u2139";
@@ -201,6 +234,10 @@ class AiKhwarizmiLogger {
         }
     }
     success(...strings) {
+        // Add file output
+        this.writeToFile('SUCCESS', ...strings);
+        
+        // Existing console output
         const fg = "green";
         const bg = "";
         const icon = "\u2713";
@@ -228,6 +265,11 @@ class AiKhwarizmiLogger {
     }
     debug(...strings) {
         if (!this.verbose) return;
+        
+        // Add file output
+        this.writeToFile('DEBUG', ...strings);
+        
+        // Existing console output
         const fg = "magenta";
         const bg = "";
         const icon = "\u1367";
@@ -254,6 +296,10 @@ class AiKhwarizmiLogger {
         }
     }
     assert(...strings) {
+        // Add file output
+        this.writeToFile('ASSERT', ...strings);
+        
+        // Existing console output
         const fg = "cyan";
         const bg = "";
         const icon = "\u0021";
@@ -277,6 +323,21 @@ class AiKhwarizmiLogger {
                     return `${this.useIcons ? `${icon} ` : ""}${item}`;
                 })
             );
+        }
+    }
+    private writeToFile(level: string, ...messages: any[]) {
+        const timestamp = new Date().toISOString();
+        const formattedMessages = messages.map(msg => 
+            // Convert any type to string without JSON formatting
+            typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg
+        );
+        
+        const logEntry = `[${timestamp}] [${level}] ${formattedMessages.join(' ')}\n`;
+        this.logFile.write(logEntry);
+    }
+    cleanup(): void {
+        if (this.logFile) {
+            this.logFile.end();
         }
     }
 }
