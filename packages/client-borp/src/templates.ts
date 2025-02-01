@@ -30,7 +30,22 @@ export const borpAnimationTemplate =`
 # Response Format
 Return only the animation name, nothing else. No explanation, no JSON, no quotes.
 `
+export const taskWorkerTemplate = `
+# Task Plan for {{agentName}}  
 
+## Objective:  
+Generate an ordered list of actions for {{agentName}} to execute while live-streaming, ensuring smooth operation and efficient time management.  
+
+## Available Actions:  
+Must be one of:  
+{{availableActions}}  
+
+## Instructions:  
+1. Analyze the provided actions and determine the execution order based on priority.  
+2. Assign an estimated duration for each action.  
+3. Ensure all actions are scheduled logically, avoiding conflicts.  
+4. Always generate a task plan. Never return null.  
+`;
 
 export const borpMessageCompletionFooter = `\nResponse format should be formatted in a JSON block like this:
 \`\`\`json

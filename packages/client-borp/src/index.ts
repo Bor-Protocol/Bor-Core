@@ -27,8 +27,32 @@ import axios from 'axios';
 
 import { ANIMATION_OPTIONS, SERVER_ENDPOINTS, SERVER_URL, getAllAnimations } from "./constants.ts";
 import { AIResponse, StreamingStatusUpdate, TaskPriority } from "./types.ts";
+import { aiKhwarizmiLogger } from '@algo3b/aikhwarizmi';
 
 const api_key = process.env.BORP_API_KEY;
+
+// Enhance the interface with task timing information
+interface TaskHistoryEntry {
+    cycleId: number;
+    startTime: Date;
+    endTime?: Date;
+    taskPlan: string[];
+    completedTasks: {
+        name: string;
+        startTime: Date;
+        endTime: Date;
+        duration: number; // in milliseconds
+    }[];
+    failedTasks: {
+        name: string;
+        startTime: Date;
+        endTime: Date;
+        duration: number;
+        error?: string;
+    }[];
+    status: 'in-progress' | 'completed' | 'failed';
+    duration?: number; // total cycle duration in milliseconds
+}
 
 export class BorpClient {
     interval: NodeJS.Timeout;
@@ -58,83 +82,283 @@ export class BorpClient {
         },
     ];
 
+    private taskQueueConstants: string[] = [
+ 
+       
+          'readChatAndReply',
+          
+       'generateFreshThought',
+           
+        'generatePeriodicAnimation',
+           
+        
+    ];
+
     private taskInterval: NodeJS.Timeout;
     private lastProcessedTimestamp: Date | undefined;
     private lastAgentChatMessageId: string | null = null;
+
+    // Add this property to the class
+    private taskHistory: TaskHistoryEntry[] = [];
+    private currentCycleId = 0;
 
     constructor(runtime: IAgentRuntime) {
         this.runtime = runtime;
         this.roomId = stringToUuid(`borp-stream-${this.runtime.agentId}`);
         this.lastProcessedTimestamp = new Date();
 
-        console.log("borp: constructor", {
-            runtime: this.runtime,
-            settings: this.runtime.character.settings,
-            vrm: this.runtime.character.settings?.secrets?.vrm,
-            avatar: this.runtime.character.settings?.secrets?.avatar,
-            lastProcessedTimestamp: this.lastProcessedTimestamp
+        // Minimal logging to avoid circular references
+        aiKhwarizmiLogger.log("borp: initializing client", {
+            agentId: this.runtime.agentId,
+            characterName: this.runtime.character.name
         });
-
-        // Start the task scheduler
-        this.taskInterval = setInterval(() => {
-            this.processNextTask();
-        }, 1000); // Check for new tasks every second
     }
 
-    /**
-     * Processes the next available task in the task queue based on priority and timing
-     * Tasks are executed sequentially to avoid conflicts and maintain system stability
-     */
-    private async processNextTask() {
-        // Get current timestamp to check task eligibility
-        const now = Date.now();
-
-        // Find the highest priority task that:
-        // 1. Isn't currently running
-        // 2. Has waited long enough since its last run (minInterval)
-        const eligibleTask = this.taskQueue.find(task => {
-            const timeElapsed = now - (task.lastRun || 0);
-            return !task.isRunning && timeElapsed >= task.minInterval;
-            //return task;
-        });
-
-        // Exit if no tasks are eligible to run
-        if (!eligibleTask) return;
-
-        // Set task status to running to prevent concurrent execution
-        eligibleTask.isRunning = true;
-
+    public async startTaskProcessing() {
         try {
-            // Execute the appropriate task based on task name
-            // Each task handles a different aspect of the AI's behavior:
-            // - readChatAndReply: Monitor chat and generate responses
-            // - generateFreshThought: Create unprompted messages
-            // - generatePeriodicAnimation: Update AI's animation state
-            // - heartbeat: Maintain connection status
-            switch (eligibleTask.name) {
-             
-                case 'readChatAndReply':
-                    await this.readChatAndReply();
-                    break;
+            const startTime = new Date();
+            aiKhwarizmiLogger.log("Starting Borp task processing", {
+                startTime: startTime.toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'long'
+                })
+            });
 
-                case 'generateFreshThought':
-                    await this.generateAndShareFreshThought();
-                    break;
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            
+            while (this.currentCycleId < 3) {
+                try {
+                    this.currentCycleId++;
+                    let taskPlan = await this.generateTheTaskPlan();
+                    
+                    const historyEntry: TaskHistoryEntry = {
+                        cycleId: this.currentCycleId,
+                        startTime: new Date(),
+                        taskPlan: [...taskPlan],
+                        completedTasks: [],
+                        failedTasks: [],
+                        status: 'in-progress'
+                    };
+                    this.taskHistory.push(historyEntry);
 
-                case 'generatePeriodicAnimation':
-                    await this.generateAndSharePeriodicAnimation();
-                    break;
+                    aiKhwarizmiLogger.log("Starting new task cycle", { 
+                        cycleId: this.currentCycleId,
+                        startTime: historyEntry.startTime.toLocaleString('en-US', {
+                            dateStyle: 'medium',
+                            timeStyle: 'long'
+                        }),
+                        taskPlan,
+                        totalCycles: this.taskHistory.length 
+                    });
 
+                    while (taskPlan && taskPlan.length > 0) {
+                        const task = taskPlan[0];
+                        const taskStartTime = new Date();
+                        
+                        try {
+                            aiKhwarizmiLogger.log(`Starting task: ${task}`, {
+                                cycleId: this.currentCycleId,
+                                startTime: taskStartTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                remainingTasks: taskPlan.length
+                            });
+                            
+                            switch (task) {
+                                case 'readChatAndReply':
+                                    await this.readChatAndReply();
+                                    break;
+                                case 'generateFreshThought':
+                                    await this.generateAndShareFreshThought();
+                                    break;
+                                case 'generatePeriodicAnimation':
+                                    await this.generateAndSharePeriodicAnimation();
+                                    break;
+                            }
+                            
+                            const taskEndTime = new Date();
+                            const taskDuration = taskEndTime.getTime() - taskStartTime.getTime();
+                            
+                            historyEntry.completedTasks.push({
+                                name: task,
+                                startTime: taskStartTime,
+                                endTime: taskEndTime,
+                                duration: taskDuration
+                            });
+                            
+                            aiKhwarizmiLogger.log("Task completed", {
+                                cycleId: this.currentCycleId,
+                                task,
+                                startTime: taskStartTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: taskEndTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                duration: `${(taskDuration / 1000).toFixed(2)} seconds`,
+                                remainingTasks: taskPlan.length - 1
+                            });
+                            
+                        } catch (taskError) {
+                            const taskEndTime = new Date();
+                            const taskDuration = taskEndTime.getTime() - taskStartTime.getTime();
+                            
+                            historyEntry.failedTasks.push({
+                                name: task,
+                                startTime: taskStartTime,
+                                endTime: taskEndTime,
+                                duration: taskDuration,
+                                error: taskError.message
+                            });
+                            
+                            aiKhwarizmiLogger.error(`Task execution error`, {
+                                task,
+                                startTime: taskStartTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: taskEndTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                duration: `${(taskDuration / 1000).toFixed(2)} seconds`,
+                                error: taskError
+                            });
+                        }
+                        
+                        taskPlan = taskPlan.slice(1);
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                    
+                    historyEntry.endTime = new Date();
+                    historyEntry.status = 'completed';
+                    historyEntry.duration = historyEntry.endTime.getTime() - historyEntry.startTime.getTime();
+                    
+                    aiKhwarizmiLogger.log("Task cycle completed", {
+                        cycleId: this.currentCycleId,
+                        cycleSummary: {
+                            duration: `${(historyEntry.duration / 1000).toFixed(2)} seconds`,
+                            startTime: historyEntry.startTime.toLocaleString('en-US', {
+                                dateStyle: 'medium',
+                                timeStyle: 'long'
+                            }),
+                            endTime: historyEntry.endTime.toLocaleString('en-US', {
+                                dateStyle: 'medium',
+                                timeStyle: 'long'
+                            }),
+                            status: historyEntry.status,
+                            taskPlan: historyEntry.taskPlan,
+                            completedTasks: historyEntry.completedTasks.map(t => ({
+                                name: t.name,
+                                duration: `${(t.duration / 1000).toFixed(2)} seconds`,
+                                startTime: t.startTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: t.endTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                })
+                            })),
+                            failedTasks: historyEntry.failedTasks.map(t => ({
+                                name: t.name,
+                                duration: `${(t.duration / 1000).toFixed(2)} seconds`,
+                                startTime: t.startTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: t.endTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                error: t.error
+                            }))
+                        },
+                        currentStats: {
+                            averageCycleDuration: `${(this.calculateAverageCycleDuration() / 1000).toFixed(2)} seconds`,
+                            taskSuccessRates: this.calculateTaskSuccessRates(),
+                            mostTimeConsumingTasks: this.identifyMostTimeConsumingTasks().map(t => ({
+                                ...t,
+                                averageDuration: `${(t.averageDuration / 1000).toFixed(2)} seconds`,
+                                totalDuration: `${(t.totalDuration / 1000).toFixed(2)} seconds`
+                            }))
+                        }
+                    });
+
+                    if (this.taskHistory.length > 100) {
+                        this.taskHistory = this.taskHistory.slice(-100);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                } catch (cycleError) {
+                    const currentEntry = this.taskHistory[this.taskHistory.length - 1];
+                    if (currentEntry && currentEntry.status === 'in-progress') {
+                        currentEntry.endTime = new Date();
+                        currentEntry.status = 'failed';
+                        currentEntry.duration = currentEntry.endTime.getTime() - currentEntry.startTime.getTime();
+                    }
+                    
+                    aiKhwarizmiLogger.error("Error in task cycle:", {
+                        cycleId: this.currentCycleId,
+                        error: cycleError,
+                        duration: currentEntry?.duration
+                    });
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
             }
-        } catch (error) {
-            // Log any errors that occur during task execution
-            console.error(`Error executing task ${eligibleTask.name}:`, error);
-        } finally {
-            // Clean up task state regardless of success/failure:
-            // - Update the last run timestamp
-            // - Reset the running flag to allow future execution
-            eligibleTask.lastRun = Date.now();
-            eligibleTask.isRunning = false;
+
+            const endTime = new Date();
+            const totalDuration = endTime.getTime() - startTime.getTime();
+
+            aiKhwarizmiLogger.log("Task and cycle processing finished", {
+                startTime: startTime.toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'long'
+                }),
+                endTime: endTime.toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'long'
+                }),
+                totalDuration: `${(totalDuration / 1000).toFixed(2)} seconds`
+            });
+            
+            const historySummary = this.taskHistory.map(cycle => ({
+                cycleId: cycle.cycleId,
+                totalDuration: cycle.duration,
+                status: cycle.status,
+                startTime: cycle.startTime,
+                endTime: cycle.endTime,
+                completedTasks: cycle.completedTasks.map(task => ({
+                    name: task.name,
+                    duration: task.duration,
+                    startTime: task.startTime,
+                    endTime: task.endTime
+                })),
+                failedTasks: cycle.failedTasks.map(task => ({
+                    name: task.name,
+                    duration: task.duration,
+                    startTime: task.startTime,
+                    endTime: task.endTime,
+                    error: task.error
+                })),
+                taskPlan: cycle.taskPlan
+            }));
+
+            aiKhwarizmiLogger.log("Complete Task History", {
+                totalCycles: this.taskHistory.length,
+                averageCycleDuration: this.calculateAverageCycleDuration(),
+                cycles: historySummary,
+                taskSuccessRates: this.calculateTaskSuccessRates(),
+                mostTimeConsumingTasks: this.identifyMostTimeConsumingTasks()
+            });
+
+        } catch (fatalError) {
+            aiKhwarizmiLogger.error("Fatal error in task processing:", fatalError);
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            return this.startTaskProcessing();
         }
     }
 
@@ -148,7 +372,7 @@ export class BorpClient {
     async readChatAndReply() {
         try {
             // Read Comments since last processed timestamp
-            console.log(`[${new Date().toLocaleString()}] Borp (${this.runtime.character.name}): Reading chat since`,
+            aiKhwarizmiLogger.log(`[${new Date().toLocaleString()}] Borp (${this.runtime.character.name}): Reading chat since`,
                 this.lastProcessedTimestamp?.toISOString());
 
             const { comments } = await fetchUnreadComments(
@@ -159,7 +383,7 @@ export class BorpClient {
             if (comments && comments.length > 0) {
                 // Process each comment and store it as a memory
                 const processedComments = await this.processComments(comments);
-                console.log("borp: processedComments", {
+                aiKhwarizmiLogger.log("borp: processedComments", {
                     count: processedComments?.length,
                     lastProcessedTimestamp: this.lastProcessedTimestamp?.toISOString()
                 });
@@ -169,16 +393,16 @@ export class BorpClient {
             this.lastProcessedTimestamp = new Date();
 
         } catch (error) {
-            console.error("Error in readChatAndReply:", error);
+            aiKhwarizmiLogger.error("Error in readChatAndReply:", error);
         }
     }
 
     async processComments(comments: IComment[]) {
-        console.log(comments);
+        aiKhwarizmiLogger.log(comments);
         const commentIds = comments?.map(comment => comment.id) ?? [];
 
         if (commentIds.length === 0) {
-            console.log(`borp (${this.runtime.character.name}): No comments to process`);
+            aiKhwarizmiLogger.log(`borp (${this.runtime.character.name}): No comments to process`);
             return commentIds;
         }
 
@@ -186,7 +410,7 @@ export class BorpClient {
         try {
             await markCommentsAsRead(commentIds);
         } catch (error) {
-            console.error("borp: Failed to mark comments as read", { error });
+            aiKhwarizmiLogger.error("borp: Failed to mark comments as read", { error });
         }
 
         // Create memories for all comments
@@ -219,14 +443,14 @@ export class BorpClient {
         }
 
         if (!selectedCommentId) {
-            console.log("No suitable comment found to respond to");
+            aiKhwarizmiLogger.log("No suitable comment found to respond to");
             return comments;
         }
 
         // Find the selected comment
         const selectedComment = comments.find(comment => comment.id === selectedCommentId);
         if (!selectedComment) {
-            console.error("Selected comment not found:", selectedCommentId);
+            aiKhwarizmiLogger.error("Selected comment not found:", selectedCommentId);
             return comments;
         }
 
@@ -234,7 +458,7 @@ export class BorpClient {
 
         // Add this new section to create first interaction memory
         try {
-            console.log("Fetching existing memories with params:", {
+            aiKhwarizmiLogger.log("Fetching existing memories with params:", {
                 roomId: this.roomId,
                 agentId: this.runtime.agentId,
                 userId: userIdUUID,
@@ -247,7 +471,7 @@ export class BorpClient {
                 userId: userIdUUID
             });
 
-            console.log("Existing memories result:", {
+            aiKhwarizmiLogger.log("Existing memories result:", {
                 found: !!existingMemories,
                 count: existingMemories?.length,
                 firstMemory: existingMemories?.[0]
@@ -277,19 +501,19 @@ export class BorpClient {
 
                 try {
                     await this.runtime.messageManager.createMemory(firstInteractionMemory);
-                    console.log("Successfully created first interaction memory:", {
+                    aiKhwarizmiLogger.log("Successfully created first interaction memory:", {
                         handle: selectedComment.handle,
                         memoryId: firstInteractionMemory.id
                     });
                 } catch (createError) {
-                    console.error("Error creating first interaction memory:", {
+                    aiKhwarizmiLogger.error("Error creating first interaction memory:", {
                         error: createError,
                         memory: firstInteractionMemory
                     });
                 }
             }
         } catch (error) {
-            console.error("Error checking/creating first interaction memory:", {
+            aiKhwarizmiLogger.error("Error checking/creating first interaction memory:", {
                 error,
                 userIdUUID,
                 roomId: this.roomId,
@@ -318,7 +542,7 @@ export class BorpClient {
             roomId: this.roomId,
         };
 
-        console.log(`borp (${this.runtime.character.name}): selectedComment`, { selectedComment });
+        aiKhwarizmiLogger.log(`borp (${this.runtime.character.name}): selectedComment`, { selectedComment });
 
         // Get created date
         const createdAt = typeof selectedComment.createdAt === 'string' ?
@@ -339,7 +563,7 @@ export class BorpClient {
 
         if (content.text) {
             await this.runtime.messageManager.createMemory(memory);
-            console.log(`borp ${this.runtime.agentId}: memory created`, { memory });
+            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: memory created`, { memory });
         }
 
         // Compose state and check if should respond
@@ -356,7 +580,7 @@ export class BorpClient {
             shouldRespond = false;
         }
 
-        console.log(`borp ${this.runtime.agentId}: shouldRespond`, { shouldRespond, selectedCommentId });
+        aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: shouldRespond`, { shouldRespond, selectedCommentId });
 
         if (shouldRespond) {
             const context = composeContext({
@@ -374,7 +598,7 @@ export class BorpClient {
             };
            
             await this.runtime.messageManager.createMemory(responseMessage);
-            console.log(`borp ${this.runtime.agentId}: reply memory created`, { responseMessage });
+            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: reply memory created`, { responseMessage });
         
 
 
@@ -385,7 +609,7 @@ export class BorpClient {
                 animationOptions: getAllAnimations().join(", "),
             });
 
-        // console.log(`Generated template animation: ${_borpAnimationTemplate}`);
+        // aiKhwarizmiLogger.log(`Generated template animation: ${_borpAnimationTemplate}`);
         // return _borpAnimationTemplate;
         
             const animationResponse = await generateText({
@@ -405,7 +629,7 @@ export class BorpClient {
             try {
                 speechUrl = await this.generateSpeech(responseContent.text);
             } catch (error) {
-                console.error(`borp ${this.runtime.agentId}: Failed to generate speech`, { error });
+                aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to generate speech`, { error });
             }
             // Post response
             const body: AIResponse = {
@@ -430,7 +654,7 @@ export class BorpClient {
                 ...(responseContent as Omit<typeof responseContent, 'text'>),
             };
 
-            console.log(`borp ${this.runtime.agentId}: body`, { body });
+            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: body`, { body });
 
 
             const fetchResponse = await fetch(SERVER_ENDPOINTS.POST.AI_RESPONSES, {
@@ -444,9 +668,9 @@ export class BorpClient {
 
 
             if (fetchResponse.status !== 200) {
-                console.error(`borp ${this.runtime.agentId}: Failed to post response to api`, { fetchResponse });
+                aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to post response to api`, { fetchResponse });
             } else {
-                console.log(`borp ${this.runtime.agentId}: CHAT REPLY: Posted message response to api`, { responseContent, body });
+                aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: CHAT REPLY: Posted message response to api`, { responseContent, body });
             }
         }
 
@@ -491,7 +715,7 @@ export class BorpClient {
             modelClass: ModelClass.MEDIUM
         });
 
-        console.log("borp: selectedCommentId", { selectedCommentId });
+        aiKhwarizmiLogger.log("borp: selectedCommentId", { selectedCommentId });
 
         return selectedCommentId === "NONE" ? null : selectedCommentId;
     }
@@ -510,7 +734,7 @@ export class BorpClient {
         });
 
         if (!response) {
-            console.error("No response from generateMessageResponse");
+            aiKhwarizmiLogger.error("No response from generateMessageResponse");
             return;
         }
 
@@ -524,9 +748,9 @@ export class BorpClient {
         return response;
     }
     async generateSpeech(text: string): Promise<string> {
-        // console.log("borp: generateSpeech", { text });
-        const agentName = this.runtime.character.name;
-        console.log(`borp (${agentName}): starting speech generation for text:`, { text });
+        // aiKhwarizmiLogger.log("borp: generateSpeech", { text });
+       /* const agentName = this.runtime.character.name;
+        aiKhwarizmiLogger.log(`borp (${agentName}): starting speech generation for text:`, { text });
     
         // Get speech service and generate audio
         const SpeechService = await this.runtime.getService(ServiceType.SPEECH_GENERATION) as any;
@@ -557,12 +781,13 @@ export class BorpClient {
             });
     
             const publicUrl = response.data.url;
-            console.log(`borp (${agentName}): upload successful`, { publicUrl });
-            return publicUrl;
-        } catch (error) {
-            console.error(`borp (${agentName}): error sending audio to server`, error);
+            aiKhwarizmiLogger.log(`borp (${agentName}): upload successful`, { publicUrl });
+            return publicUrl;*/
+            return "https://borstorage.b-cdn.net/speech/1737312298831.mp3";
+       // } catch (error) {
+          //  aiKhwarizmiLogger.error(`borp (${agentName}): error sending audio to server`, error);
             throw new Error("Failed to upload audio");
-        }
+       // }
     }
 
 
@@ -587,7 +812,7 @@ export class BorpClient {
             const data = await response.json();
             return { success: true, data };
         } catch (error) {
-            console.error(`borp ${this.runtime.agentId}: API call failed`, { endpoint, error });
+            aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: API call failed`, { endpoint, error });
             return { success: false, error };
         }
     }
@@ -648,10 +873,10 @@ export class BorpClient {
                 throw new Error(data.error || 'Failed to update streaming status');
             }
 
-            console.log(`borp (${this.runtime.character.name}): Updated streaming status`, data);
+            aiKhwarizmiLogger.log(`borp (${this.runtime.character.name}): Updated streaming status`, data);
             return data.status; // Server returns { success: true, status: {...} }
         } catch (error) {
-            console.error(`borp (${this.runtime.character.name}): Failed to update streaming status:`, error);
+            aiKhwarizmiLogger.error(`borp (${this.runtime.character.name}): Failed to update streaming status:`, error);
             throw error;
         }
     }
@@ -686,15 +911,19 @@ export class BorpClient {
             };
             // Store the memory
             await this.runtime.messageManager.createMemory(thoughtMemory);
-            console.log(`borp ${this.runtime.agentId}: Created memory for fresh thought`, { thoughtMemory });
-
+            
+            // Log memory without embedding
+            const { embedding, ...memoryWithoutEmbedding } = thoughtMemory;
+            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: Created memory for fresh thought`, { 
+                thoughtMemory: memoryWithoutEmbedding 
+            });
 
             // Generate speech
             let speechUrl;
             try {
                 speechUrl = await this.generateSpeech(thoughtText);
             } catch (error) {
-                console.error("Error generating speech:", error);
+                aiKhwarizmiLogger.error("Error generating speech:", error);
                 speechUrl = undefined;
             }
 
@@ -718,11 +947,11 @@ export class BorpClient {
             });
 
             if (!fetchResponse.ok) {
-                console.error("Failed to post fresh thought:", await fetchResponse.text());
+                aiKhwarizmiLogger.error("Failed to post fresh thought:", await fetchResponse.text());
             }
 
         } catch (error) {
-            console.error("Error in generateAndShareFreshThought:", error);
+            aiKhwarizmiLogger.error("Error in generateAndShareFreshThought:", error);
         }
     }
 
@@ -800,7 +1029,7 @@ Return only the thought, no explanations or formatting.
         });
 
         
-        // console.log(`Generated template: ${context}`);
+        // aiKhwarizmiLogger.log(`Generated template: ${context}`);
         
 
         const thoughtText = await generateText({
@@ -809,8 +1038,84 @@ Return only the thought, no explanations or formatting.
             modelClass: ModelClass.MEDIUM,
         });
 
-        console.log(`Generated Fresh Thought: ${thoughtText}`);
+        aiKhwarizmiLogger.log(`Generated Fresh Thought: ${thoughtText}`);
         return thoughtText;
+    }
+
+    private async generateTheTaskPlan(): Promise<string[]> {
+
+
+      
+    
+
+        const context = composeContext({
+            state: await this.runtime.composeState({
+                userId: this.runtime.agentId,
+                agentId: this.runtime.agentId,
+                content: { text: '', source: "borp" },
+                roomId: this.roomId,
+            }, {
+                agentName: this.runtime.character.name,
+               tasks: this.taskQueueConstants,
+                adjectives: this.runtime.character.adjectives,
+            }),
+            template: `
+# Task Plan for {{agentName}}  
+
+## Objective:  
+Generate a prioritized list of actions for {{agentName}}.  
+
+## Available Actions:  
+Must be one of these tasks:  
+{{tasks}}  
+
+## Instructions:  
+1. Always return only the structured task list with minimum 6 tasks. Never return null.  
+
+## Example Output Format:  
+json  
+{  
+  "taskQueueConstants": [  
+    {  
+      "name": "one of the tasks",  
+
+    },  
+    {  
+      "name": "one of the tasks",  
+    
+    },  
+    {  
+      "name": "one of the tasks",  
+    
+    }  
+  ]  
+}`,
+        });
+
+        
+        // aiKhwarizmiLogger.log(`Generated template: ${context}`);
+        
+
+        const thoughtText = await generateText({
+            runtime: this.runtime,
+            context,
+            modelClass: ModelClass.MEDIUM,
+        });
+
+        aiKhwarizmiLogger.log(`Generated Task Plan: ${thoughtText}`);
+
+// Parse the JSON from the markdown code block
+const jsonString = thoughtText
+    .replace(/^```json\n/, '')  // Remove starting ```json
+    .replace(/\n```$/, '');     // Remove ending ```
+
+const parsed = JSON.parse(jsonString);
+
+// Extract just the names into an array
+const namesArray = parsed.taskQueueConstants.map(item => item.name);
+
+aiKhwarizmiLogger.log(namesArray);
+        return namesArray;
     }
 
     // make random animations each time 
@@ -844,7 +1149,7 @@ Return only the thought, no explanations or formatting.
                 template: borpAnimationTemplate
             });
 
-            // console.log(`Generated template animation: ${context}`);
+            // aiKhwarizmiLogger.log(`Generated template animation: ${context}`);
             // return context;
 
             const animation = await generateText({
@@ -852,17 +1157,17 @@ Return only the thought, no explanations or formatting.
                 context,
                 modelClass: ModelClass.SMALL,
             });
-            console.log(`Generated template animation: ${animation}`);
+            aiKhwarizmiLogger.log(`Generated template animation: ${animation}`);
             // return animation;
 
             // Validate the animation is in our list
             const cleanAnimation = animation.trim().toLowerCase();
             if (!getAllAnimations().includes(cleanAnimation)) {
-                console.warn(`Invalid animation generated: ${cleanAnimation}, defaulting to 'idle'`);
+                aiKhwarizmiLogger.warn(`Invalid animation generated: ${cleanAnimation}, defaulting to 'idle'`);
                 return;
             }
 
-            console.log(`Generated cleanAnimation animation: ${cleanAnimation}`);
+            aiKhwarizmiLogger.log(`Generated cleanAnimation animation: ${cleanAnimation}`);
             // return cleanAnimation;
 
             // Post the animation
@@ -879,10 +1184,10 @@ Return only the thought, no explanations or formatting.
             });
 
             if (!response.ok) {
-                console.error("Failed to post periodic animation:", await response.text());
+                aiKhwarizmiLogger.error("Failed to post periodic animation:", await response.text());
             }
         } catch (error) {
-            console.error("Error in generateAndSharePeriodicAnimation:", error);
+            aiKhwarizmiLogger.error("Error in generateAndSharePeriodicAnimation:", error);
         }
     }
 
@@ -896,7 +1201,7 @@ Return only the thought, no explanations or formatting.
 
         const roomId = stringToUuid(BorpClient.ROOM_ID);
 
-        console.log(`borp ${this.runtime.agentId}: reading chat and replying to agent chat room ${roomId}`);
+        aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: reading chat and replying to agent chat room ${roomId}`);
 
         try {
             const { success, messages } = await fetchRoomMessages(
@@ -905,14 +1210,14 @@ Return only the thought, no explanations or formatting.
             );
 
             if (!success || !messages?.length) {
-                console.log(`borp ${this.runtime.agentId}: No messages found or fetch unsuccessful`);
+                aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: No messages found or fetch unsuccessful`);
                 return;
             }
 
             const incomingMessages = messages;
             const latestMessage = incomingMessages[incomingMessages.length - 1];
 
-            console.log(`borp ${this.runtime.agentId}: Message Processing Status:`, {
+            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: Message Processing Status:`, {
                 totalMessages: incomingMessages.length,
                 latestMessage: {
                     id: latestMessage.id,
@@ -929,13 +1234,13 @@ Return only the thought, no explanations or formatting.
 
             // Check if we've already processed this message
             if (this.lastAgentChatMessageId === latestMessage.id) {
-                console.log(`borp ${this.runtime.agentId}: SKIPPING - Already processed latest message ${latestMessage.id}`);
+                aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: SKIPPING - Already processed latest message ${latestMessage.id}`);
                 return;
             }
 
             // Check if the latest message is from this agent
             if (latestMessage.agentId === this.runtime.agentId) {
-                console.log(`borp ${this.runtime.agentId}: SKIPPING - Latest message is from self`, {
+                aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: SKIPPING - Latest message is from self`, {
                     messageId: latestMessage.id,
                     message: latestMessage.message
                 });
@@ -950,7 +1255,7 @@ Return only the thought, no explanations or formatting.
                     .map(m => `${m.agentName}: ${m.message}`)
                     .join('\n');
 
-                console.log(`borp ${this.runtime.agentId}: PROCESSING MESSAGE:`, {
+                aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: PROCESSING MESSAGE:`, {
                     chatHistoryLength: messages.slice(-10).length,
                     chatHistory,
                     willRespondTo: {
@@ -1008,7 +1313,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                 // Parse the JSON response
                 const parsedResponse = parseJSONObjectFromText(responseText);
                 if (!parsedResponse || !parsedResponse.text) {
-                    console.error(`borp ${this.runtime.agentId}: Failed to parse response:`, responseText);
+                    aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to parse response:`, responseText);
                     return;
                 }
 
@@ -1018,7 +1323,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                 try {
                     speechUrl = await this.generateSpeech(parsedResponse.text);
                 } catch (error) {
-                    console.error(`borp ${this.runtime.agentId}: Failed to generate speech`, { error });
+                    aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to generate speech`, { error });
                 }
 
                 // Post response to the room with audio
@@ -1031,7 +1336,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                 );
 
                 // After successful response, log the update
-                console.log(`borp ${this.runtime.agentId}: Successfully processed message:`, {
+                aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: Successfully processed message:`, {
                     previousMessageId: this.lastAgentChatMessageId,
                     newMessageId: latestMessage.id,
                     responsePosted: true,
@@ -1043,13 +1348,102 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
 
             this.lastProcessedTimestamp = new Date();
         } catch (error) {
-            console.error(`borp ${this.runtime.agentId}: Error in readAgentChatAndReply:`, {
+            aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Error in readAgentChatAndReply:`, {
                 error,
                 lastProcessedId: this.lastAgentChatMessageId
             });
         }
     }
 
+    // Add a method to get task history
+    public getTaskHistory(): TaskHistoryEntry[] {
+        return this.taskHistory;
+    }
+
+    // Add a method to get current cycle status
+    public getCurrentCycleStatus(): TaskHistoryEntry | null {
+        return this.taskHistory.length > 0 ? 
+            this.taskHistory[this.taskHistory.length - 1] : 
+            null;
+    }
+
+    // Add these helper methods to calculate statistics
+    private calculateAverageCycleDuration(): number {
+        const completedCycles = this.taskHistory.filter(cycle => cycle.duration);
+        if (completedCycles.length === 0) return 0;
+        
+        const totalDuration = completedCycles.reduce((sum, cycle) => sum + cycle.duration!, 0);
+        return totalDuration / completedCycles.length;
+    }
+
+    private calculateTaskSuccessRates(): Record<string, { 
+        success: number, 
+        failed: number, 
+        rate: string 
+    }> {
+        const taskStats: Record<string, { success: number, failed: number }> = {};
+        
+        // Count successes and failures for each task type
+        this.taskHistory.forEach(cycle => {
+            cycle.completedTasks.forEach(task => {
+                if (!taskStats[task.name]) {
+                    taskStats[task.name] = { success: 0, failed: 0 };
+                }
+                taskStats[task.name].success++;
+            });
+            
+            cycle.failedTasks.forEach(task => {
+                if (!taskStats[task.name]) {
+                    taskStats[task.name] = { success: 0, failed: 0 };
+                }
+                taskStats[task.name].failed++;
+            });
+        });
+        
+        // Calculate success rates
+        return Object.entries(taskStats).reduce((acc, [taskName, stats]) => {
+            const total = stats.success + stats.failed;
+            const rate = total > 0 ? ((stats.success / total) * 100).toFixed(1) : '0';
+            acc[taskName] = {
+                ...stats,
+                rate: `${rate}%`
+            };
+            return acc;
+        }, {} as Record<string, { success: number, failed: number, rate: string }>);
+    }
+
+    private identifyMostTimeConsumingTasks(): Array<{
+        taskName: string,
+        averageDuration: number,
+        totalDuration: number,
+        executionCount: number
+    }> {
+        const taskStats: Record<string, {
+            totalDuration: number,
+            count: number
+        }> = {};
+        
+        // Aggregate durations for all tasks (both completed and failed)
+        this.taskHistory.forEach(cycle => {
+            [...cycle.completedTasks, ...cycle.failedTasks].forEach(task => {
+                if (!taskStats[task.name]) {
+                    taskStats[task.name] = { totalDuration: 0, count: 0 };
+                }
+                taskStats[task.name].totalDuration += task.duration;
+                taskStats[task.name].count++;
+            });
+        });
+        
+        // Convert to array and calculate averages
+        return Object.entries(taskStats)
+            .map(([taskName, stats]) => ({
+                taskName,
+                averageDuration: stats.count > 0 ? stats.totalDuration / stats.count : 0,
+                totalDuration: stats.totalDuration,
+                executionCount: stats.count
+            }))
+            .sort((a, b) => b.totalDuration - a.totalDuration);
+    }
 }
 
 
@@ -1057,14 +1451,38 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
 //the start of the process
 export const BorpClientInterface: Client = {
     start: async (runtime: IAgentRuntime) => {
-        const client = new BorpClient(runtime);
-        return client;
+        try {
+            const client = new BorpClient(runtime);
+            
+            // Start the task processing loop with error handling
+            client.startTaskProcessing().catch(error => {
+                aiKhwarizmiLogger.error("Error starting task processing:", error);
+                // Instead of exiting, log the error and let the process continue running
+                aiKhwarizmiLogger.warn("Task processing failed but client will continue running");
+            });
+            
+            return client;
+        } catch (error) {
+            aiKhwarizmiLogger.error("Error creating Borp client:", error);
+            throw error;
+        }
     },
     stop: async (runtime: IAgentRuntime) => {
-        console.warn("Direct client does not support stopping yet");
+        aiKhwarizmiLogger.warn("Direct client does not support stopping yet");
     },
 };
 
 export default BorpClientInterface;
+
+// Add to your shutdown handling
+process.on('SIGINT', () => {
+    aiKhwarizmiLogger.cleanup();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    aiKhwarizmiLogger.cleanup();
+    process.exit(0);
+});
 
 
