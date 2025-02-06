@@ -134,3 +134,65 @@ aiKhwarizmiLogger.error("Error starting task processing:", error);
 3. Use timing information to optimize task execution
 4. Check error patterns in failed tasks
 5. Monitor average cycle duration for performance trends
+
+
+
+
+
+## Configuration Options
+
+### 1. Current Subject (`currentSubject`)
+- Defines the current topic the agent will discuss
+- Only one subject should be active (uncommented) at a time
+- To change subjects:
+  1. Comment out current subject (add # at start)
+  2. Uncomment desired subject (remove # from start)
+
+### 2. Operation Mode (`mode`)
+Available modes:
+- `normal`: Standard operation with chat replies and periodic animations
+- `startStructuredStory`: Generates coherent stories with proper progression
+- `startStructuredContentGeneration`: Creates structured content with defined goals
+- `all`: Enables all functionalities
+
+## Usage Instructions
+
+1. **Changing the Subject**:
+   ```properties
+   # Current (active)
+   currentSubject=you are talking about the good things about Tunisia
+   
+   # To change, comment above line and uncomment desired subject:
+   #currentSubject=your are talking about the movieGladiator
+   ```
+
+2. **Changing the Mode**:
+   ```properties
+   # Select only one mode:
+   #mode=normal
+   mode=startStructuredStory
+   #mode=startStructuredContentGeneration
+   ```
+
+## Best Practices
+
+1. **Subject Selection**:
+   - Keep only one subject active at a time
+   - Use clear, specific subjects
+   - Ensure proper grammar and spelling
+
+2. **Mode Selection**:
+   - Only one mode should be active
+   - Choose mode based on desired output type
+   - Restart agent after mode changes
+
+3. **File Maintenance**:
+   - Keep comments for reference
+   - Maintain proper formatting
+   - Back up working configurations
+
+## Notes
+- Changes require either agent restart or `refreshConfig()` call
+- Invalid configurations may default to fallback values
+- Comments (lines starting with #) are ignored
+- Empty lines are allowed for readability

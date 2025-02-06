@@ -10,7 +10,7 @@ import {
 } from "@algo3b/aikhwarizmi/src/utils/types.ts";
 import { stringToUuid } from "@algo3b/aikhwarizmi/src/utils/uuid.ts";
 import { fetchRoomMessages, fetchUnreadComments, IComment, markCommentsAsRead, postRoomMessage } from './db/index.ts';
-import { embeddingZeroVector } from "@algo3b/aikhwarizmi";
+import {  embeddingZeroVector } from "@algo3b/aikhwarizmi";
 import { composeContext } from "@algo3b/aikhwarizmi";
 
 import { generateMessageResponse, generateText } from "@algo3b/aikhwarizmi/src/index.ts";
@@ -28,12 +28,12 @@ import axios from 'axios';
 import { ANIMATION_OPTIONS, SERVER_ENDPOINTS, SERVER_URL, getAllAnimations } from "./constants.ts";
 import { AIResponse, StreamingStatusUpdate, TaskPriority } from "./types.ts";
 import { aiKhwarizmiLogger } from '@algo3b/aikhwarizmi';
-import { ConfigReader } from './utils/configReader.ts';
 
 const api_key = process.env.BORP_API_KEY;
 
 // Enhance the interface with task timing information
 interface TaskHistoryEntry {
+    cycleId: number;
     startTime: Date;
     endTime?: Date;
     taskPlan: string[];
@@ -66,17 +66,7 @@ interface StructuredThoughtResponse {
     isComplete: boolean;
 }
 
-interface ContentPlan {
-    topic: string;
-    goal: string;
-    steps: string[];
-    currentStep: number;
-    isComplete: boolean;
-}
-
 export class BorpClient {
-    private currentSubject: string;
-    private mode: string;
     interval: NodeJS.Timeout;
 
     intervalTopLikers: NodeJS.Timeout;
@@ -85,26 +75,44 @@ export class BorpClient {
 
     roomId: UUID;
 
-
-    private taskQueueConstants: string[] = [
-
-
-        'readChatAndReply',
-
-        'generateFreshThought',
-
-        'generatePeriodicAnimation',
-        'startStructuredStory',
-        'startStructuredContentGeneration',
-
-
+    private taskQueue: TaskPriority[] = [
+ 
+        {
+            name: 'readChatAndReply',
+            priority: 1,
+            minInterval: 1000 * 20
+        },
+        {
+            name: 'generateFreshThought',
+            priority: 3,
+            minInterval: 1000 * 60 * 1
+        },
+        {
+            name: 'generatePeriodicAnimation',
+            priority: 2,
+            minInterval: 1000 * 20
+        },
     ];
 
+    private taskQueueConstants: string[] = [
+ 
+       
+          'readChatAndReply',
+          
+       'generateFreshThought',
+           
+        'generatePeriodicAnimation',
+           
+        
+    ];
+
+    private taskInterval: NodeJS.Timeout;
     private lastProcessedTimestamp: Date | undefined;
     private lastAgentChatMessageId: string | null = null;
 
     // Add this property to the class
     private taskHistory: TaskHistoryEntry[] = [];
+    private currentCycleId = 0;
 
     private storyState: StoryState = {
         isComplete: false,
@@ -112,64 +120,50 @@ export class BorpClient {
         storyProgress: 0
     };
 
-    private contentPlan: ContentPlan = {
-        topic: '',
-        goal: '',
-        steps: [],
-        currentStep: 0,
-        isComplete: false
-    };
-
-    private configReader: ConfigReader;
-
     constructor(runtime: IAgentRuntime) {
         this.runtime = runtime;
         this.roomId = stringToUuid(`borp-stream-${this.runtime.agentId}`);
         this.lastProcessedTimestamp = new Date();
-        this.configReader = ConfigReader.getInstance();
 
-        // Get current subject from config
-        this.currentSubject = this.configReader.getValue('currentSubject');
-        this.mode = this.configReader.getValue('mode');
         // Minimal logging to avoid circular references
         aiKhwarizmiLogger.log("borp: initializing client", {
             agentId: this.runtime.agentId,
-            characterName: this.runtime.character.name,
-            currentSubject: this.currentSubject
+            characterName: this.runtime.character.name
         });
     }
 
-   
+
 
     private thoughtHistory: string[] = [];
+    private currentSubject: string = "how hard to teach english in Tunisia"; // Default subject
     private maxThoughtHistory: number = 5; // Keep last 5 thoughts for context
 
-    // Add this method to manage thought history
-    private updateThoughtHistory(newThought: string) {
+     // Add this method to manage thought history
+     private updateThoughtHistory(newThought: string) {
         this.thoughtHistory.push(newThought);
         if (this.thoughtHistory.length > this.maxThoughtHistory) {
             this.thoughtHistory.shift(); // Remove oldest thought
         }
     }
 
-    // Add this method to change subjects periodically
-    private async rotateSubject() {
+     // Add this method to change subjects periodically
+     private async rotateSubject() {
         const subjects = [
             "you are talking about the good things about Tunisia",
             "your are talking about the movieGladiator",
             "you are talking about who you can travel to portugal",
             "You are teaching english"
 
-            /* "space exploration",
-             "underwater mysteries",
-             "digital consciousness",
-             "future technology",
-             "ancient civilizations",
-             "parallel universes",
-             "dream psychology",
-             "artificial intelligence",
-             "time travel theories",
-             "quantum physics"*/
+           /* "space exploration",
+            "underwater mysteries",
+            "digital consciousness",
+            "future technology",
+            "ancient civilizations",
+            "parallel universes",
+            "dream psychology",
+            "artificial intelligence",
+            "time travel theories",
+            "quantum physics"*/
         ];
         this.currentSubject = subjects[Math.floor(Math.random() * subjects.length)];
         this.thoughtHistory = []; // Clear history when changing subjects
@@ -179,39 +173,6 @@ export class BorpClient {
     public async startTaskProcessing() {
         try {
             const startTime = new Date();
-            if (this.mode === 'startStructuredStory') {
-                this.taskQueueConstants = [
-
-
-                    'startStructuredStory',
-
-
-
-                ];
-            } else if (this.mode === 'startStructuredContentGeneration') {
-                this.taskQueueConstants = [
-
-                    'startStructuredContentGeneration',
-
-
-
-
-                ];
-            }
-            else if (this.mode === 'normal') {
-                this.taskQueueConstants = [
-
-
-                    'readChatAndReply',
-
-                    'generateFreshThought',
-
-                    'generatePeriodicAnimation',
-
-
-
-                ];
-            }
             aiKhwarizmiLogger.log("Starting Borp task processing", {
                 startTime: startTime.toLocaleString('en-US', {
                     dateStyle: 'medium',
@@ -220,188 +181,266 @@ export class BorpClient {
             });
 
             await new Promise(resolve => setTimeout(resolve, 5000));
+            /*
+            while (this.currentCycleId < 3) {
+                try {
+                    this.currentCycleId++;
+                    let taskPlan = await this.generateTheTaskPlan();
+                    
+                    const historyEntry: TaskHistoryEntry = {
+                        cycleId: this.currentCycleId,
+                        startTime: new Date(),
+                        taskPlan: [...taskPlan],
+                        completedTasks: [],
+                        failedTasks: [],
+                        status: 'in-progress'
+                    };
+                    this.taskHistory.push(historyEntry);
 
-
-            try {
-                let taskPlan = await this.generateTheTaskPlan();
-
-                const historyEntry: TaskHistoryEntry = {
-                    startTime: new Date(),
-                    taskPlan: [...taskPlan],
-                    completedTasks: [],
-                    failedTasks: [],
-                    status: 'in-progress'
-                };
-                this.taskHistory.push(historyEntry);
-
-                aiKhwarizmiLogger.log("Starting new task cycle", {
-                    startTime: historyEntry.startTime.toLocaleString('en-US', {
-                        dateStyle: 'medium',
-                        timeStyle: 'long'
-                    }),
-                    taskPlan,
-                    totalCycles: this.taskHistory.length
-                });
-
-                while (taskPlan && taskPlan.length > 0) {
-                    let task = taskPlan[0];
-                    const taskStartTime = new Date();
-
-                    try {
-                        aiKhwarizmiLogger.log(`Starting task: ${task}`, {
-                            startTime: taskStartTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            remainingTasks: taskPlan.length
-                        });
-
-                        switch (task) {
-                            case 'readChatAndReply':
-                                await this.readChatAndReply();
-                                break;
-                            case 'generateFreshThought':
-                                await this.generateAndShareFreshThought();
-                                break;
-                            case 'generatePeriodicAnimation':
-                                await this.generateAndSharePeriodicAnimation();
-                                break;
-                            case 'startStructuredStory':
-                                await this.startStructuredStory();
-                                break;
-                            case 'startStructuredContentGeneration':
-                                await this.startStructuredContentGeneration();
-                                break;
-                        }
-
-                        const taskEndTime = new Date();
-                        const taskDuration = taskEndTime.getTime() - taskStartTime.getTime();
-
-                        historyEntry.completedTasks.push({
-                            name: task,
-                            startTime: taskStartTime,
-                            endTime: taskEndTime,
-                            duration: taskDuration
-                        });
-
-                        aiKhwarizmiLogger.log("Task completed", {
-                            task,
-                            startTime: taskStartTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            endTime: taskEndTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            duration: `${(taskDuration / 1000).toFixed(2)} seconds`,
-                            remainingTasks: taskPlan.length - 1
-                        });
-
-                    } catch (taskError) {
-                        const taskEndTime = new Date();
-                        const taskDuration = taskEndTime.getTime() - taskStartTime.getTime();
-
-                        historyEntry.failedTasks.push({
-                            name: task,
-                            startTime: taskStartTime,
-                            endTime: taskEndTime,
-                            duration: taskDuration,
-                            error: taskError.message
-                        });
-
-                        aiKhwarizmiLogger.error(`Task execution error`, {
-                            task,
-                            startTime: taskStartTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            endTime: taskEndTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            duration: `${(taskDuration / 1000).toFixed(2)} seconds`,
-                            error: taskError
-                        });
-                    }
-
-                    taskPlan = taskPlan.slice(1);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-
-                historyEntry.endTime = new Date();
-                historyEntry.status = 'completed';
-                historyEntry.duration = historyEntry.endTime.getTime() - historyEntry.startTime.getTime();
-
-                aiKhwarizmiLogger.log("Task cycle completed", {
-                    cycleSummary: {
-                        duration: `${(historyEntry.duration / 1000).toFixed(2)} seconds`,
+                    aiKhwarizmiLogger.log("Starting new task cycle", { 
+                        cycleId: this.currentCycleId,
                         startTime: historyEntry.startTime.toLocaleString('en-US', {
                             dateStyle: 'medium',
                             timeStyle: 'long'
                         }),
-                        endTime: historyEntry.endTime.toLocaleString('en-US', {
-                            dateStyle: 'medium',
-                            timeStyle: 'long'
-                        }),
-                        status: historyEntry.status,
-                        taskPlan: historyEntry.taskPlan,
-                        completedTasks: historyEntry.completedTasks.map(t => ({
-                            name: t.name,
-                            duration: `${(t.duration / 1000).toFixed(2)} seconds`,
-                            startTime: t.startTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            endTime: t.endTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            })
-                        })),
-                        failedTasks: historyEntry.failedTasks.map(t => ({
-                            name: t.name,
-                            duration: `${(t.duration / 1000).toFixed(2)} seconds`,
-                            startTime: t.startTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            endTime: t.endTime.toLocaleString('en-US', {
-                                dateStyle: 'medium',
-                                timeStyle: 'long'
-                            }),
-                            error: t.error
-                        }))
-                    },
-                    currentStats: {
-                        averageCycleDuration: `${(this.calculateAverageCycleDuration() / 1000).toFixed(2)} seconds`,
-                        taskSuccessRates: this.calculateTaskSuccessRates(),
-                        mostTimeConsumingTasks: this.identifyMostTimeConsumingTasks().map(t => ({
-                            ...t,
-                            averageDuration: `${(t.averageDuration / 1000).toFixed(2)} seconds`,
-                            totalDuration: `${(t.totalDuration / 1000).toFixed(2)} seconds`
-                        }))
+                        taskPlan,
+                        totalCycles: this.taskHistory.length 
+                    });
+
+                    while (taskPlan && taskPlan.length > 0) {
+                        const task = taskPlan[0];
+                        const taskStartTime = new Date();
+                        
+                        try {
+                            aiKhwarizmiLogger.log(`Starting task: ${task}`, {
+                                cycleId: this.currentCycleId,
+                                startTime: taskStartTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                remainingTasks: taskPlan.length
+                            });
+                            
+                            switch (task) {
+                                case 'readChatAndReply':
+                                    await this.readChatAndReply();
+                                    break;
+                                case 'generateFreshThought':
+                                    await this.generateAndShareFreshThought();
+                                    break;
+                                case 'generatePeriodicAnimation':
+                                    await this.generateAndSharePeriodicAnimation();
+                                    break;
+                            }
+                            
+                            const taskEndTime = new Date();
+                            const taskDuration = taskEndTime.getTime() - taskStartTime.getTime();
+                            
+                            historyEntry.completedTasks.push({
+                                name: task,
+                                startTime: taskStartTime,
+                                endTime: taskEndTime,
+                                duration: taskDuration
+                            });
+                            
+                            aiKhwarizmiLogger.log("Task completed", {
+                                cycleId: this.currentCycleId,
+                                task,
+                                startTime: taskStartTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: taskEndTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                duration: `${(taskDuration / 1000).toFixed(2)} seconds`,
+                                remainingTasks: taskPlan.length - 1
+                            });
+                            
+                        } catch (taskError) {
+                            const taskEndTime = new Date();
+                            const taskDuration = taskEndTime.getTime() - taskStartTime.getTime();
+                            
+                            historyEntry.failedTasks.push({
+                                name: task,
+                                startTime: taskStartTime,
+                                endTime: taskEndTime,
+                                duration: taskDuration,
+                                error: taskError.message
+                            });
+                            
+                            aiKhwarizmiLogger.error(`Task execution error`, {
+                                task,
+                                startTime: taskStartTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: taskEndTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                duration: `${(taskDuration / 1000).toFixed(2)} seconds`,
+                                error: taskError
+                            });
+                        }
+                        
+                        taskPlan = taskPlan.slice(1);
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                     }
-                });
+                    
+                    historyEntry.endTime = new Date();
+                    historyEntry.status = 'completed';
+                    historyEntry.duration = historyEntry.endTime.getTime() - historyEntry.startTime.getTime();
+                    
+                    aiKhwarizmiLogger.log("Task cycle completed", {
+                        cycleId: this.currentCycleId,
+                        cycleSummary: {
+                            duration: `${(historyEntry.duration / 1000).toFixed(2)} seconds`,
+                            startTime: historyEntry.startTime.toLocaleString('en-US', {
+                                dateStyle: 'medium',
+                                timeStyle: 'long'
+                            }),
+                            endTime: historyEntry.endTime.toLocaleString('en-US', {
+                                dateStyle: 'medium',
+                                timeStyle: 'long'
+                            }),
+                            status: historyEntry.status,
+                            taskPlan: historyEntry.taskPlan,
+                            completedTasks: historyEntry.completedTasks.map(t => ({
+                                name: t.name,
+                                duration: `${(t.duration / 1000).toFixed(2)} seconds`,
+                                startTime: t.startTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: t.endTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                })
+                            })),
+                            failedTasks: historyEntry.failedTasks.map(t => ({
+                                name: t.name,
+                                duration: `${(t.duration / 1000).toFixed(2)} seconds`,
+                                startTime: t.startTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                endTime: t.endTime.toLocaleString('en-US', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'long'
+                                }),
+                                error: t.error
+                            }))
+                        },
+                        currentStats: {
+                            averageCycleDuration: `${(this.calculateAverageCycleDuration() / 1000).toFixed(2)} seconds`,
+                            taskSuccessRates: this.calculateTaskSuccessRates(),
+                            mostTimeConsumingTasks: this.identifyMostTimeConsumingTasks().map(t => ({
+                                ...t,
+                                averageDuration: `${(t.averageDuration / 1000).toFixed(2)} seconds`,
+                                totalDuration: `${(t.totalDuration / 1000).toFixed(2)} seconds`
+                            }))
+                        }
+                    });
 
-                if (this.taskHistory.length > 100) {
-                    this.taskHistory = this.taskHistory.slice(-100);
+                    if (this.taskHistory.length > 100) {
+                        this.taskHistory = this.taskHistory.slice(-100);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                } catch (cycleError) {
+                    const currentEntry = this.taskHistory[this.taskHistory.length - 1];
+                    if (currentEntry && currentEntry.status === 'in-progress') {
+                        currentEntry.endTime = new Date();
+                        currentEntry.status = 'failed';
+                        currentEntry.duration = currentEntry.endTime.getTime() - currentEntry.startTime.getTime();
+                    }
+                    
+                    aiKhwarizmiLogger.error("Error in task cycle:", {
+                        cycleId: this.currentCycleId,
+                        error: cycleError,
+                        duration: currentEntry?.duration
+                    });
+                    await new Promise(resolve => setTimeout(resolve, 5000));
                 }
-
-                await new Promise(resolve => setTimeout(resolve, 3000));
-            } catch (cycleError) {
-                const currentEntry = this.taskHistory[this.taskHistory.length - 1];
-                if (currentEntry && currentEntry.status === 'in-progress') {
-                    currentEntry.endTime = new Date();
-                    currentEntry.status = 'failed';
-                    currentEntry.duration = currentEntry.endTime.getTime() - currentEntry.startTime.getTime();
+            }*/
+                let isStoryComplete = false;
+            const completeStory: string[] = [];
+            while (!isStoryComplete) {
+                aiKhwarizmiLogger.log(`Generating structured thought for cycle ${this.currentCycleId}`);
+                this.currentCycleId++;
+                
+                const result = await this.generateStructuredThought();
+                completeStory.push(result.thought); // Add each thought to the story array
+                isStoryComplete = result.isComplete;
+                
+                if (isStoryComplete) {
+                    // Log the complete story with formatting
+                    aiKhwarizmiLogger.log("Complete Story Generated:", {
+                        subject: this.currentSubject,
+                        totalThoughts: completeStory.length,
+                        storyDuration: `${this.currentCycleId} cycles`,
+                        story: {
+                            summary: "Story completed successfully",
+                            narrative: completeStory.map((thought, index) => ({
+                                part: index + 1,
+                                thought: thought
+                            })),
+                            fullText: completeStory.join("\n\n")
+                        },
+                        finalState: {
+                            phase: this.storyState.currentPhase,
+                            progress: this.storyState.storyProgress
+                        }
+                    });
+                    break;
                 }
-
-                aiKhwarizmiLogger.error("Error in task cycle:", {
-                    error: cycleError,
-                    duration: currentEntry?.duration
-                });
-                await new Promise(resolve => setTimeout(resolve, 5000));
             }
+            const endTime = new Date();
+            const totalDuration = endTime.getTime() - startTime.getTime();
+
+            aiKhwarizmiLogger.log("Task and cycle processing finished", {
+                startTime: startTime.toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'long'
+                }),
+                endTime: endTime.toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'long'
+                }),
+                totalDuration: `${(totalDuration / 1000).toFixed(2)} seconds`
+            });
+            
+            const historySummary = this.taskHistory.map(cycle => ({
+                cycleId: cycle.cycleId,
+                totalDuration: cycle.duration,
+                status: cycle.status,
+                startTime: cycle.startTime,
+                endTime: cycle.endTime,
+                completedTasks: cycle.completedTasks.map(task => ({
+                    name: task.name,
+                    duration: task.duration,
+                    startTime: task.startTime,
+                    endTime: task.endTime
+                })),
+                failedTasks: cycle.failedTasks.map(task => ({
+                    name: task.name,
+                    duration: task.duration,
+                    startTime: task.startTime,
+                    endTime: task.endTime,
+                    error: task.error
+                })),
+                taskPlan: cycle.taskPlan
+            }));
+
+            aiKhwarizmiLogger.log("Complete Task History", {
+                totalCycles: this.taskHistory.length,
+                averageCycleDuration: this.calculateAverageCycleDuration(),
+                cycles: historySummary,
+                taskSuccessRates: this.calculateTaskSuccessRates(),
+                mostTimeConsumingTasks: this.identifyMostTimeConsumingTasks()
+            });
 
         } catch (fatalError) {
             aiKhwarizmiLogger.error("Fatal error in task processing:", fatalError);
@@ -414,90 +453,9 @@ export class BorpClient {
         await this.updateStreamingStatus({
             isStreaming: true,
         });
-    }
+        }
     // Chat & Message Processing
 
-
-
-
-
-    async startStructuredStory() {
-        const startTime = new Date();
-        let isStoryComplete = false;
-        const completeStory: string[] = [];
-        while (!isStoryComplete) {
-            aiKhwarizmiLogger.log(`Generating structured Story`);
-
-            const result = await this.generateStructuredStory();
-            completeStory.push(result.thought); // Add each thought to the story array
-            isStoryComplete = result.isComplete;
-
-            if (isStoryComplete) {
-                // Log the complete story with formatting
-                aiKhwarizmiLogger.log("Complete Story Generated:", {
-                    subject: this.currentSubject,
-                    totalThoughts: completeStory.length,
-
-                    story: {
-                        summary: "Story completed successfully",
-                        narrative: completeStory.map((thought, index) => ({
-                            part: index + 1,
-                            thought: thought
-                        })),
-                        fullText: completeStory.join("\n\n")
-                    },
-                    finalState: {
-                        phase: this.storyState.currentPhase,
-                        progress: this.storyState.storyProgress
-                    }
-                });
-                break;
-            }
-        }
-        const endTime = new Date();
-        const totalDuration = endTime.getTime() - startTime.getTime();
-
-        aiKhwarizmiLogger.log("Story Task processing finished", {
-            startTime: startTime.toLocaleString('en-US', {
-                dateStyle: 'medium',
-                timeStyle: 'long'
-            }),
-            endTime: endTime.toLocaleString('en-US', {
-                dateStyle: 'medium',
-                timeStyle: 'long'
-            }),
-            totalDuration: `${(totalDuration / 1000).toFixed(2)} seconds`
-        });
-
-        const historySummary = this.taskHistory.map(cycle => ({
-            totalDuration: cycle.duration,
-            status: cycle.status,
-            startTime: cycle.startTime,
-            endTime: cycle.endTime,
-            completedTasks: cycle.completedTasks.map(task => ({
-                name: task.name,
-                duration: task.duration,
-                startTime: task.startTime,
-                endTime: task.endTime
-            })),
-            failedTasks: cycle.failedTasks.map(task => ({
-                name: task.name,
-                duration: task.duration,
-                startTime: task.startTime,
-                endTime: task.endTime,
-                error: task.error
-            })),
-            taskPlan: cycle.taskPlan
-        }));
-
-        aiKhwarizmiLogger.log("Complete Story Task History", {
-            totalCycles: this.taskHistory.length,
-            averageCycleDuration: this.calculateAverageCycleDuration(),
-            cycles: historySummary,
-            taskSuccessRates: this.calculateTaskSuccessRates(),
-            mostTimeConsumingTasks: this.identifyMostTimeConsumingTasks()
-        });
-    }
     async readChatAndReply() {
         try {
             // Read Comments since last processed timestamp
@@ -606,7 +564,7 @@ export class BorpClient {
                 firstMemory: existingMemories?.[0]
             });
 
-            if (selectedComment.message !== undefined && (existingMemories === undefined || existingMemories.length === 0)) {
+            if (selectedComment.message!==undefined && (existingMemories === undefined || existingMemories.length === 0)) {
                 // This is the first interaction - create a special memory
                 const firstInteractionMemory: Memory = {
                     id: stringToUuid(`first-interaction-${selectedComment.handle}-${this.runtime.agentId}`),
@@ -725,22 +683,22 @@ export class BorpClient {
                 userId: this.runtime.agentId,
                 content: responseContent,
             };
-
+           
             await this.runtime.messageManager.createMemory(responseMessage);
             aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: reply memory created`, { responseMessage });
+        
 
 
-
-            // Generate and post animation
+                 // Generate and post animation
             const _borpAnimationTemplate = borpMessageAnimationTemplate({
                 agentName: this.runtime.character.name,
                 lastMessage: responseContent.text,
                 animationOptions: getAllAnimations().join(", "),
             });
 
-            // aiKhwarizmiLogger.log(`Generated template animation: ${_borpAnimationTemplate}`);
-            // return _borpAnimationTemplate;
-
+        // aiKhwarizmiLogger.log(`Generated template animation: ${_borpAnimationTemplate}`);
+        // return _borpAnimationTemplate;
+        
             const animationResponse = await generateText({
                 runtime: this.runtime,
                 context: _borpAnimationTemplate,
@@ -754,7 +712,7 @@ export class BorpClient {
 
 
             // Generate and post speech
-            let speechUrl;
+           let speechUrl;
             try {
                 speechUrl = await this.generateSpeech(responseContent.text);
             } catch (error) {
@@ -878,45 +836,45 @@ export class BorpClient {
     }
     async generateSpeech(text: string): Promise<string> {
         // aiKhwarizmiLogger.log("borp: generateSpeech", { text });
-        /* const agentName = this.runtime.character.name;
-         aiKhwarizmiLogger.log(`borp (${agentName}): starting speech generation for text:`, { text });
-     
-         // Get speech service and generate audio
-         const SpeechService = await this.runtime.getService(ServiceType.SPEECH_GENERATION) as any;
-         const speechService = SpeechService.getInstance();
-         const audioStream = await speechService.generate(this.runtime, text);
-     
-         // Convert the audio stream to a buffer
-         const audioBuffer = await new Promise<Buffer>((resolve, reject) => {
-             const chunks: Uint8Array[] = [];
-             audioStream.on('data', (chunk: Uint8Array) => chunks.push(chunk));
-             audioStream.on('end', () => resolve(Buffer.concat(chunks)));
-             audioStream.on('error', reject);
-         });
-     
-         // Generate filename
-         const timestamp = Date.now();
-         const fileName = `${this.runtime.agentId}-${timestamp}.mp3`;
-     
-         try {
-             const response = await axios.post(`${SERVER_URL}/api/upload/audio`, audioBuffer, {
-                 headers: {
-                     'Content-Type': 'audio/mpeg',
-                     'Content-Disposition': `attachment; filename="${fileName}"`,
-                     'isAudioStream': 'true'
-                 },
-                 maxBodyLength: Infinity,  // Allow large files
-                 maxContentLength: Infinity,
-             });
-     
-             const publicUrl = response.data.url;
-             aiKhwarizmiLogger.log(`borp (${agentName}): upload successful`, { publicUrl });
-             return publicUrl;*/
-        return "https://borstorage.b-cdn.net/speech/1737312298831.mp3";
-        // } catch (error) {
-        //  aiKhwarizmiLogger.error(`borp (${agentName}): error sending audio to server`, error);
-        throw new Error("Failed to upload audio");
-        // }
+       /* const agentName = this.runtime.character.name;
+        aiKhwarizmiLogger.log(`borp (${agentName}): starting speech generation for text:`, { text });
+    
+        // Get speech service and generate audio
+        const SpeechService = await this.runtime.getService(ServiceType.SPEECH_GENERATION) as any;
+        const speechService = SpeechService.getInstance();
+        const audioStream = await speechService.generate(this.runtime, text);
+    
+        // Convert the audio stream to a buffer
+        const audioBuffer = await new Promise<Buffer>((resolve, reject) => {
+            const chunks: Uint8Array[] = [];
+            audioStream.on('data', (chunk: Uint8Array) => chunks.push(chunk));
+            audioStream.on('end', () => resolve(Buffer.concat(chunks)));
+            audioStream.on('error', reject);
+        });
+    
+        // Generate filename
+        const timestamp = Date.now();
+        const fileName = `${this.runtime.agentId}-${timestamp}.mp3`;
+    
+        try {
+            const response = await axios.post(`${SERVER_URL}/api/upload/audio`, audioBuffer, {
+                headers: {
+                    'Content-Type': 'audio/mpeg',
+                    'Content-Disposition': `attachment; filename="${fileName}"`,
+                    'isAudioStream': 'true'
+                },
+                maxBodyLength: Infinity,  // Allow large files
+                maxContentLength: Infinity,
+            });
+    
+            const publicUrl = response.data.url;
+            aiKhwarizmiLogger.log(`borp (${agentName}): upload successful`, { publicUrl });
+            return publicUrl;*/
+            return "https://borstorage.b-cdn.net/speech/1737312298831.mp3";
+       // } catch (error) {
+          //  aiKhwarizmiLogger.error(`borp (${agentName}): error sending audio to server`, error);
+            throw new Error("Failed to upload audio");
+       // }
     }
 
 
@@ -1011,9 +969,9 @@ export class BorpClient {
     }
 
 
+  
 
-
-
+   
 
     private async generateAndShareFreshThought() {
         try {
@@ -1040,11 +998,11 @@ export class BorpClient {
             };
             // Store the memory
             await this.runtime.messageManager.createMemory(thoughtMemory);
-
+            
             // Log memory without embedding
             const { embedding, ...memoryWithoutEmbedding } = thoughtMemory;
-            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: Created memory for fresh thought`, {
-                thoughtMemory: memoryWithoutEmbedding
+            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: Created memory for fresh thought`, { 
+                thoughtMemory: memoryWithoutEmbedding 
             });
 
             // Generate speech
@@ -1109,7 +1067,7 @@ export class BorpClient {
         // Check if there are at least 5 parts to select for bio
         const numberOfBioPartsToSelect = Math.min(5, bioPartsArray.length); // Ensure we don't exceed the array length
         const randomBioParts = getRandomElements(bioPartsArray, numberOfBioPartsToSelect); // Get random bio parts
-
+    
 
         const context = composeContext({
             state: await this.runtime.composeState({
@@ -1119,7 +1077,7 @@ export class BorpClient {
                 roomId: this.roomId,
             }, {
                 agentName: this.runtime.character.name,
-                bio: randomBioParts.join(', '),
+                bio: randomBioParts.join(', '), 
                 lore: randomLoreParts.join(', '), // Join the random parts into a string
                 adjectives: this.runtime.character.adjectives,
             }),
@@ -1157,9 +1115,9 @@ Return only the thought, no explanations or formatting.
             `,
         });
 
-
+        
         // aiKhwarizmiLogger.log(`Generated template: ${context}`);
-
+        
 
         const thoughtText = await generateText({
             runtime: this.runtime,
@@ -1171,13 +1129,13 @@ Return only the thought, no explanations or formatting.
         return thoughtText;
     }
 
-
+    
 
     private async generateTheTaskPlan(): Promise<string[]> {
 
 
-
-
+      
+    
 
         const context = composeContext({
             state: await this.runtime.composeState({
@@ -1187,7 +1145,7 @@ Return only the thought, no explanations or formatting.
                 roomId: this.roomId,
             }, {
                 agentName: this.runtime.character.name,
-                tasks: this.taskQueueConstants,
+               tasks: this.taskQueueConstants,
                 adjectives: this.runtime.character.adjectives,
             }),
             template: `
@@ -1223,9 +1181,9 @@ json
 }`,
         });
 
-
+        
         // aiKhwarizmiLogger.log(`Generated template: ${context}`);
-
+        
 
         const thoughtText = await generateText({
             runtime: this.runtime,
@@ -1235,20 +1193,20 @@ json
 
         aiKhwarizmiLogger.log(`Generated Task Plan: ${thoughtText}`);
 
-        // Parse the JSON from the markdown code block
-        const jsonString = thoughtText
-            .replace(/^```json\n/, '')  // Remove starting ```json
-            .replace(/\n```$/, '');     // Remove ending ```
+// Parse the JSON from the markdown code block
+const jsonString = thoughtText
+    .replace(/^```json\n/, '')  // Remove starting ```json
+    .replace(/\n```$/, '');     // Remove ending ```
 
-        const parsed = JSON.parse(jsonString);
+const parsed = JSON.parse(jsonString);
 
-        // Extract just the names into an array
-        const namesArray = parsed.taskQueueConstants.map(item => item.name);
+// Extract just the names into an array
+const namesArray = parsed.taskQueueConstants.map(item => item.name);
 
-        aiKhwarizmiLogger.log(namesArray);
+aiKhwarizmiLogger.log(namesArray);
         return namesArray;
     }
-    private async generateStructuredStory(): Promise<StructuredThoughtResponse> {
+    private async generateStructuredThought(): Promise<StructuredThoughtResponse> {
         const context = composeContext({
             state: await this.runtime.composeState({
                 userId: this.runtime.agentId,
@@ -1258,33 +1216,59 @@ json
             }, {
                 agentName: this.runtime.character.name,
                 previousThoughts: this.thoughtHistory || [],
-                currentSubject: this.currentSubject,
+                currentSubject: "tell me a sad story about a cat who lost his owner and his name is kiki", // You'll need to add this property
                 currentPhase: this.storyState.currentPhase,
                 storyProgress: this.storyState.storyProgress,
             }),
             template: `
-# Task: Generate a Structured Story Thought
+# Task: Generate a Structured Story Thought for {{agentName}}'s livestream
 
-Current Progress: ${this.storyState.storyProgress}%
-Current Phase: ${this.storyState.currentPhase}
+## Story Context
+Current Subject: {{currentSubject}}
+Story Phase: {{currentPhase}}
+Progress: {{storyProgress}}%
+
+## Previous Story Elements:
+{{previousThoughts}}
+
+## Story Structure Guidelines:
+1. Introduction Phase (0-25%):
+   - Set the scene
+   - Introduce main elements
+   - Establish the tone
+
+2. Development Phase (26-50%):
+   - Build upon established elements
+   - Introduce complications
+   - Deepen the narrative
+
+3. Climax Phase (51-75%):
+   - Build tension
+   - Present key conflicts
+   - Lead to critical moments
+
+4. Resolution Phase (76-100%):
+   - Resolve main elements
+   - Provide closure
+   - Signal story completion
 
 ## Instructions:
-1. Generate the next story thought
-2. Progress must increase with each thought:
-   - Introduction (0-25%)
-   - Development (26-50%)
-   - Climax (51-75%)
-   - Resolution (76-100%)
-3. Story MUST complete at 100%
-4. Each thought must advance the progress by 10-25%
+1. Generate a thought that:
+   - Matches the current story phase
+   - Builds coherently on previous thoughts
+   - Advances the story naturally
+2. Keep it between 3-60 words
+3. NO hashtags or emojis
+4. Make it feel spontaneous despite the structure
 
-Return JSON:
+## Response Format:
+Return JSON in this format:
 \`\`\`json
 {
-    "thought": "your thought here",
-    "storyProgress": <next_progress_number>,
-    "phase": "<current_phase>",
-    "isComplete": <true_when_100%>
+    "thought": "The actual thought text",
+    "storyProgress": 85,
+    "isComplete": false,
+    "nextPhase": "resolution"
 }
 \`\`\`
 `
@@ -1297,34 +1281,35 @@ Return JSON:
         });
 
         try {
+            // Clean up the response by removing markdown code block formatting
             const cleanResponse = response
-                .replace(/^```json\n/, '')
-                .replace(/\n```$/, '')
-                .trim();
+                .replace(/^```json\n/, '')  // Remove opening ```json
+                .replace(/\n```$/, '')      // Remove closing ```
+                .trim();                    // Remove any extra whitespace
 
             const parsed = JSON.parse(cleanResponse);
             
-            // Update story state with bounds checking
-            this.storyState.storyProgress = Math.min(parsed.storyProgress, 100); // Ensure progress doesn't exceed 100
-            this.storyState.currentPhase = parsed.phase;
-            
-            // Set isComplete when we reach 100% progress
-            this.storyState.isComplete = this.storyState.storyProgress >= 100;
+            // Update story state
+            this.storyState.storyProgress = parsed.storyProgress;
+            this.storyState.currentPhase = parsed.nextPhase;
+            this.storyState.isComplete = parsed.isComplete;
 
-            if (this.storyState.isComplete) {
+            if (parsed.isComplete) {
                 aiKhwarizmiLogger.log(`Story is complete..`);
             } else {
                 this.updateThoughtHistory(parsed.thought);
             }
+
             aiKhwarizmiLogger.log(`Generated structured thought:`, {
                 thought: parsed.thought,
                 storyProgress: parsed.storyProgress,
-                phase: parsed.phase,
+                phase: parsed.nextPhase,
                 isComplete: parsed.isComplete
             });
+
             return {
                 thought: parsed.thought,
-                isComplete: this.storyState.isComplete
+                isComplete: parsed.isComplete
             };
         } catch (error) {
             aiKhwarizmiLogger.error("Error parsing structured thought response:", {
@@ -1348,12 +1333,12 @@ Return JSON:
                 ...ANIMATION_OPTIONS.GESTURES,
                 ...ANIMATION_OPTIONS.SPECIAL
             ];
-
+    
             // Randomly select 10 unique animations
             const randomAnimations = allAnimations
                 .sort(() => Math.random() - 0.5)
                 .slice(0, 10);
-
+    
             const context = composeContext({
                 state: await this.runtime.composeState({
                     userId: this.runtime.agentId,
@@ -1413,7 +1398,7 @@ Return JSON:
 
 
 
-
+   
     static ROOM_ID = "borp-room";
 
     async readAgentChatAndReply() {
@@ -1562,7 +1547,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                     responsePosted: true,
                     response: parsedResponse.text
                 });
-
+                
                 this.lastAgentChatMessageId = latestMessage.id;
             }
 
@@ -1582,8 +1567,8 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
 
     // Add a method to get current cycle status
     public getCurrentCycleStatus(): TaskHistoryEntry | null {
-        return this.taskHistory.length > 0 ?
-            this.taskHistory[this.taskHistory.length - 1] :
+        return this.taskHistory.length > 0 ? 
+            this.taskHistory[this.taskHistory.length - 1] : 
             null;
     }
 
@@ -1591,18 +1576,18 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
     private calculateAverageCycleDuration(): number {
         const completedCycles = this.taskHistory.filter(cycle => cycle.duration);
         if (completedCycles.length === 0) return 0;
-
+        
         const totalDuration = completedCycles.reduce((sum, cycle) => sum + cycle.duration!, 0);
         return totalDuration / completedCycles.length;
     }
 
-    private calculateTaskSuccessRates(): Record<string, {
-        success: number,
-        failed: number,
-        rate: string
+    private calculateTaskSuccessRates(): Record<string, { 
+        success: number, 
+        failed: number, 
+        rate: string 
     }> {
         const taskStats: Record<string, { success: number, failed: number }> = {};
-
+        
         // Count successes and failures for each task type
         this.taskHistory.forEach(cycle => {
             cycle.completedTasks.forEach(task => {
@@ -1611,7 +1596,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                 }
                 taskStats[task.name].success++;
             });
-
+            
             cycle.failedTasks.forEach(task => {
                 if (!taskStats[task.name]) {
                     taskStats[task.name] = { success: 0, failed: 0 };
@@ -1619,7 +1604,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                 taskStats[task.name].failed++;
             });
         });
-
+        
         // Calculate success rates
         return Object.entries(taskStats).reduce((acc, [taskName, stats]) => {
             const total = stats.success + stats.failed;
@@ -1642,7 +1627,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
             totalDuration: number,
             count: number
         }> = {};
-
+        
         // Aggregate durations for all tasks (both completed and failed)
         this.taskHistory.forEach(cycle => {
             [...cycle.completedTasks, ...cycle.failedTasks].forEach(task => {
@@ -1653,7 +1638,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                 taskStats[task.name].count++;
             });
         });
-
+        
         // Convert to array and calculate averages
         return Object.entries(taskStats)
             .map(([taskName, stats]) => ({
@@ -1664,194 +1649,6 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
             }))
             .sort((a, b) => b.totalDuration - a.totalDuration);
     }
-
-    private async generateStructuredContent(): Promise<StructuredThoughtResponse> {
-        const context = composeContext({
-            state: await this.runtime.composeState({
-                userId: this.runtime.agentId,
-                agentId: this.runtime.agentId,
-                content: { text: '', source: "borp" },
-                roomId: this.roomId,
-            }, {
-                agentName: this.runtime.character.name,
-                previousThoughts: this.thoughtHistory || [],
-                currentSubject: this.currentSubject,
-                currentStep: this.contentPlan.currentStep,
-                contentPlan: this.contentPlan,
-            }),
-            template: `
-# Task: Generate Structured Content for {{agentName}}'s livestream
-
-## Content Context
-Subject: {{currentSubject}}
-${this.contentPlan.currentStep > 0 ? `
-Previous Content:
-${this.thoughtHistory.map((thought, i) => `${i + 1}. ${thought}`).join('\n')}
-
-Current Goal: ${this.contentPlan.goal}
-Current Step (${this.contentPlan.currentStep} of ${this.contentPlan.steps.length}): 
-${this.contentPlan.steps[this.contentPlan.currentStep - 1]}
-` : ''}
-
-## Instructions
-${this.contentPlan.currentStep === 0 ? `
-1. Analyze the subject "${this.currentSubject}" and create a content plan:
-   - Determine the type (review, tutorial, story, etc.)
-   - Set a clear goal (inform, persuade, entertain)
-   - Create nombre <10 logical steps to reach that goal
-   - Each step should naturally flow into the next
-   - Consider how to maintain viewer engagement
-` : `
-1. Generate the next part of your content:
-   - Use natural transitions from previous thoughts
-   - Stay focused on the current step: "${this.contentPlan.steps[this.contentPlan.currentStep - 1]}"
-   - Maintain a conversational, engaging tone
-   - Build towards the final goal: "${this.contentPlan.goal}"
-`}
-
-2. Keep responses natural and engaging
-3. Use connecting phrases between thoughts
-4. Maintain a clear narrative thread
-5. Keep each response between 3-60 words
-
-## Response Format:
-Return JSON in this format:
-\`\`\`json
-{
-    ${this.contentPlan.currentStep === 0 ? `
-    "thought": "Initial engaging introduction to the topic",
-    "contentPlan": {
-        "topic": "Specific topic focus",
-        "goal": "Clear end goal",
-        "steps": ["Step 1", "Step 2", "Step 3", "Step 4"]
-    },
-    "currentStep": 1` : `
-    "thought": "Your next connected thought",
-    "currentStep": ${this.contentPlan.currentStep + 1}`}
-    ${this.contentPlan.currentStep > 0 ? `,
-    "transition": "Brief transition from previous thought"` : ''},
-    "isComplete": ${this.contentPlan.currentStep >= (this.contentPlan.steps?.length || 0) - 1 ? "true" : "false"}
-}
-\`\`\`
-`
-        });
-
-        const response = await generateText({
-            runtime: this.runtime,
-            context,
-            modelClass: ModelClass.MEDIUM,
-        });
-
-        try {
-            const cleanResponse = response
-                .replace(/^```json\n/, '')
-                .replace(/\n```$/, '')
-                .trim();
-
-            const parsed = JSON.parse(cleanResponse);
-
-            // Initialize content plan on first step
-            if (this.contentPlan.currentStep === 0 && parsed.contentPlan) {
-                this.contentPlan = {
-                    ...parsed.contentPlan,
-                    currentStep: 1,
-                    isComplete: false
-                };
-                aiKhwarizmiLogger.log("Content plan initialized:", {
-                    plan: this.contentPlan,
-                    firstThought: parsed.thought
-                });
-            } else {
-                // For subsequent steps, include transition if available
-                const thoughtWithTransition = parsed.transition ?
-                    `${parsed.transition} ${parsed.thought}` :
-                    parsed.thought;
-
-                this.contentPlan.currentStep = parsed.currentStep;
-                this.contentPlan.isComplete = parsed.isComplete;
-
-                aiKhwarizmiLogger.log("Content progress:", {
-                    step: this.contentPlan.currentStep,
-                    totalSteps: this.contentPlan.steps.length,
-                    thought: thoughtWithTransition
-                });
-            }
-
-            this.updateThoughtHistory(parsed.thought);
-
-            return {
-                thought: parsed.thought,
-                isComplete: this.contentPlan.isComplete
-            };
-        } catch (error) {
-            aiKhwarizmiLogger.error("Error parsing structured content response:", {
-                error,
-                rawResponse: response
-            });
-            return {
-                thought: "Let me gather my thoughts...",
-                isComplete: false
-            };
-        }
-    }
-
-    // Add this method to use the structured content generator
-    public async startStructuredContentGeneration() {
-        try {
-            const startTime = new Date();
-            aiKhwarizmiLogger.log("Starting structured content generation", {
-                subject: this.currentSubject,
-                startTime: startTime.toLocaleString()
-            });
-
-            let isComplete = false;
-            const completeContent: string[] = [];
-
-            while (!isComplete) {
-                const result = await this.generateStructuredContent();
-                completeContent.push(result.thought);
-                isComplete = result.isComplete;
-
-                if (isComplete) {
-                    aiKhwarizmiLogger.log("Content Generation Completed:", {
-                        subject: this.currentSubject,
-                        goal: this.contentPlan.goal,
-                        totalSteps: this.contentPlan.steps.length,
-                        content: {
-                            summary: "Content generated successfully",
-                            steps: this.contentPlan.steps,
-                            narrative: completeContent.map((thought, index) => ({
-                                step: index + 1,
-                                stepName: this.contentPlan.steps[index],
-                                content: thought
-                            })),
-                            fullText: completeContent.join("\n\n")
-                        },
-                        finalState: {
-                            totalSteps: this.contentPlan.steps.length,
-                            completedSteps: completeContent.length,
-                            goal: this.contentPlan.goal
-                        }
-                    });
-                    break;
-                }
-
-                // Add a small delay between thoughts to simulate natural pacing
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-
-        } catch (error) {
-            aiKhwarizmiLogger.error("Error in content generation:", error);
-        }
-    }
-     // Add method to refresh config without restarting the agent to be used
-     public refreshConfig() {
-        this.configReader.reloadConfig();
-        this.currentSubject = this.configReader.getValue('currentSubject');
-        aiKhwarizmiLogger.log("Configuration refreshed", {
-            newSubject: this.currentSubject
-        });
-    }
 }
 
 
@@ -1861,14 +1658,14 @@ export const BorpClientInterface: Client = {
     start: async (runtime: IAgentRuntime) => {
         try {
             const client = new BorpClient(runtime);
-
+            
             // Start the task processing loop with error handling
             client.startTaskProcessing().catch(error => {
                 aiKhwarizmiLogger.error("Error starting task processing:", error);
                 // Instead of exiting, log the error and let the process continue running
                 aiKhwarizmiLogger.warn("Task processing failed but client will continue running");
             });
-
+            
             return client;
         } catch (error) {
             aiKhwarizmiLogger.error("Error creating Borp client:", error);
