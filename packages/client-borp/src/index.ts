@@ -74,6 +74,16 @@ interface ContentPlan {
     isComplete: boolean;
 }
 
+interface TaskState {
+    isInterrupted: boolean;
+    currentTask: string | null;
+    interruptedAt: {
+        task: string;
+        progress: any; // Store task-specific progress
+        timestamp: Date;
+    } | null;
+}
+
 export class BorpClient {
     private currentSubject: string;
     private mode: string;
@@ -122,6 +132,12 @@ export class BorpClient {
 
     private configReader: ConfigReader;
 
+    private taskState: TaskState = {
+        isInterrupted: false,
+        currentTask: null,
+        interruptedAt: null
+    };
+
     constructor(runtime: IAgentRuntime) {
         this.runtime = runtime;
         this.roomId = stringToUuid(`borp-stream-${this.runtime.agentId}`);
@@ -142,7 +158,7 @@ export class BorpClient {
    
 
     private thoughtHistory: string[] = [];
-    private maxThoughtHistory: number = 5; // Keep last 5 thoughts for context
+    private maxThoughtHistory: number = 100; // Keep last 100 thoughts for context
 
     // Add this method to manage thought history
     private updateThoughtHistory(newThought: string) {
@@ -176,6 +192,65 @@ export class BorpClient {
         aiKhwarizmiLogger.log(`Changed thought subject to: ${this.currentSubject}`);
     }
 
+    // Add new method to handle task interruption
+    private async handleTaskInterruption(newTask: string) {
+        if (this.taskState.currentTask) {
+            this.taskState.isInterrupted = true;
+            this.taskState.interruptedAt = {
+                task: this.taskState.currentTask,
+                progress: this.getTaskProgress(this.taskState.currentTask),
+                timestamp: new Date()
+            };
+            aiKhwarizmiLogger.log(`Task interrupted: ${this.taskState.currentTask} to handle ${newTask}`, {
+                interruptedAt: this.taskState.interruptedAt
+            });
+        }
+    }
+
+    // Add method to get task-specific progress
+    private getTaskProgress(task: string): any {
+        switch (task) {
+            case 'startStructuredContentGeneration':
+                return {
+                    contentPlan: this.contentPlan,
+                    currentStep: this.contentPlan.currentStep,
+                    thoughtHistory: this.thoughtHistory
+                };
+            case 'startStructuredStory':
+                return {
+                    storyState: this.storyState,
+                    thoughtHistory: this.thoughtHistory
+                };
+            default:
+                return null;
+        }
+    }
+
+    // Add method to resume interrupted task
+    private async resumeInterruptedTask() {
+        if (this.taskState.interruptedAt) {
+            const { task, progress } = this.taskState.interruptedAt;
+            aiKhwarizmiLogger.log(`Resuming interrupted task: ${task}`, { progress });
+
+            // Restore task-specific state
+            switch (task) {
+                case 'startStructuredContentGeneration':
+                    this.contentPlan = progress.contentPlan;
+                    this.thoughtHistory = progress.thoughtHistory;
+                    await this.startStructuredContentGeneration(true); // Add resume parameter
+                    break;
+                case 'startStructuredStory':
+                    this.storyState = progress.storyState;
+                    this.thoughtHistory = progress.thoughtHistory;
+                    await this.startStructuredStory(true); // Add resume parameter
+                    break;
+            }
+
+            this.taskState.isInterrupted = false;
+            this.taskState.interruptedAt = null;
+        }
+    }
+
     public async startTaskProcessing() {
         try {
             const startTime = new Date();
@@ -207,6 +282,16 @@ export class BorpClient {
                     'generateFreshThought',
 
                     'generatePeriodicAnimation',
+
+
+
+                ];
+            }
+            else if (this.mode === 'talkthenreply') {
+                this.taskQueueConstants = [
+
+                    'startStructuredContentGeneration',
+                    'readChatAndReply',
 
 
 
@@ -246,8 +331,17 @@ export class BorpClient {
                 while (taskPlan && taskPlan.length > 0) {
                     let task = taskPlan[0];
                     const taskStartTime = new Date();
+                    this.taskState.currentTask = task;
 
                     try {
+                        // Check for high-priority interruptions
+                        if (task !== 'readChatAndReply' && await this.hasUnreadMessages()) {
+                            await this.handleTaskInterruption('readChatAndReply');
+                            await this.readChatAndReply();
+                            await this.resumeInterruptedTask();
+                            continue; // Continue with original task
+                        }
+
                         aiKhwarizmiLogger.log(`Starting task: ${task}`, {
                             startTime: taskStartTime.toLocaleString('en-US', {
                                 dateStyle: 'medium',
@@ -325,6 +419,7 @@ export class BorpClient {
                         });
                     }
 
+                    this.taskState.currentTask = null;
                     taskPlan = taskPlan.slice(1);
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
@@ -420,13 +515,32 @@ export class BorpClient {
 
 
 
+    // Add method to check for unread messages
+    private async hasUnreadMessages(): Promise<boolean> {
+        try {
+            const { comments } = await fetchUnreadComments(
+                this.runtime.agentId,
+                this.lastProcessedTimestamp
+            );
+            return comments && comments.length > 0;
+        } catch (error) {
+            aiKhwarizmiLogger.error("Error checking unread messages:", error);
+            return false;
+        }
+    }
 
-    async startStructuredStory() {
+    async startStructuredStory(isResuming: boolean = false) {
         const startTime = new Date();
         let isStoryComplete = false;
         const completeStory: string[] = [];
         while (!isStoryComplete) {
-            aiKhwarizmiLogger.log(`Generating structured Story`);
+            // Check for interruptions
+            if (await this.hasUnreadMessages()) {
+                await this.handleTaskInterruption('readChatAndReply');
+                return; // Will be resumed later
+            }
+
+            aiKhwarizmiLogger.log(`${isResuming ? 'Resuming' : 'Generating'} structured Story`);
 
             const result = await this.generateStructuredStory();
             completeStory.push(result.thought); // Add each thought to the story array
@@ -498,6 +612,7 @@ export class BorpClient {
             mostTimeConsumingTasks: this.identifyMostTimeConsumingTasks()
         });
     }
+
     async readChatAndReply() {
         try {
             // Read Comments since last processed timestamp
@@ -1796,18 +1911,25 @@ Return JSON in this format:
     }
 
     // Add this method to use the structured content generator
-    public async startStructuredContentGeneration() {
+    public async startStructuredContentGeneration(isResuming: boolean = false) {
         try {
             const startTime = new Date();
-            aiKhwarizmiLogger.log("Starting structured content generation", {
+            aiKhwarizmiLogger.log(`${isResuming ? 'Resuming' : 'Starting'} structured content generation`, {
                 subject: this.currentSubject,
-                startTime: startTime.toLocaleString()
+                startTime: startTime.toLocaleString(),
+                currentStep: this.contentPlan.currentStep
             });
 
             let isComplete = false;
             const completeContent: string[] = [];
 
             while (!isComplete) {
+                // Check for interruptions
+                if (await this.hasUnreadMessages()) {
+                    await this.handleTaskInterruption('readChatAndReply');
+                    return; // Will be resumed later
+                }
+
                 const result = await this.generateStructuredContent();
                 completeContent.push(result.thought);
                 isComplete = result.isComplete;

@@ -1,0 +1,749 @@
+****
+cycle of execution of generateStructuredStory
+
+[2025-02-06T22:03:03.915Z] [LOG] borp: initializing client {
+  "agentId": "795df77f-1620-07db-bd9a-0e2dfefef248",
+  "characterName": "Trump",
+  "currentSubject": "you are talking about the good things about Tunisia"
+}
+[2025-02-06T22:03:03.928Z] [LOG] Starting Borp task processing {
+  "startTime": "Feb 6, 2025, 10:03:03 PM GMT"
+}
+[2025-02-06T22:03:12.038Z] [LOG] Generated Task Plan: ```json
+{
+  "taskQueueConstants": [
+    {
+      "name": "startStructuredStory"
+    },
+    {
+      "name": "startStructuredStory"
+    },
+    {
+      "name": "startStructuredStory"
+    },
+    {
+      "name": "startStructuredStory"
+    },
+    {
+      "name": "startStructuredStory"
+    },
+    {
+      "name": "startStructuredStory"
+    }
+  ]
+}
+```
+[2025-02-06T22:03:12.039Z] [LOG] [
+  "startStructuredStory",
+  "startStructuredStory",
+  "startStructuredStory",
+  "startStructuredStory",
+  "startStructuredStory",
+  "startStructuredStory"
+]
+[2025-02-06T22:03:12.040Z] [LOG] Starting new task cycle {
+  "startTime": "Feb 6, 2025, 10:03:12 PM GMT",
+  "taskPlan": [
+    "startStructuredStory",
+    "startStructuredStory",
+    "startStructuredStory",
+    "startStructuredStory",
+    "startStructuredStory",
+    "startStructuredStory"
+  ],
+  "totalCycles": 1
+}
+[2025-02-06T22:03:12.040Z] [LOG] Starting task: startStructuredStory {
+  "startTime": "Feb 6, 2025, 10:03:12 PM GMT",
+  "remainingTasks": 6
+}
+[2025-02-06T22:03:12.041Z] [LOG] Generating structured Story
+[2025-02-06T22:03:14.515Z] [LOG] Generated structured thought: {
+  "thought": "In the quaint village of Elderglen, nestled between misty mountains and lush, whispering forests, a young blacksmith named Bor discovered an ancient, rust-covered key while digging a new well. Intrigued by its intricate design and mysterious aura, Bor felt an inexplicable pull to uncover the secrets it held.",
+  "storyProgress": 15,
+  "phase": "introduction",
+  "isComplete": false
+}
+[2025-02-06T22:03:14.515Z] [LOG] Generating structured Story
+[2025-02-06T22:03:18.233Z] [LOG] Generated structured thought: {
+  "thought": "In the bustling city of Eldoria, a place where magic and technology intertwine seamlessly, young inventor Aria has just unveiled her latest creation: a device capable of harnessing the city's ambient magical energy. As she demonstrates its potential to a skeptical crowd at the annual Inventor's Fair, a mysterious figure watches from the shadows, intrigued by the device's unique capabilities.",
+  "storyProgress": 25,
+  "phase": "introduction",
+  "isComplete": false
+}
+[2025-02-06T22:03:18.234Z] [LOG] Generating structured Story
+[2025-02-06T22:03:20.179Z] [LOG] Generated structured thought: {
+  "thought": "As Sarah stepped into the ancient library, the air was thick with the scent of old parchment and mystery. She had heard rumors of a hidden manuscript that could unlock the secrets of the past. Determined to uncover it, she began her search, aware that others might be looking for it too.",
+  "storyProgress": 40,
+  "phase": "development",
+  "isComplete": false
+}
+[2025-02-06T22:03:20.180Z] [LOG] Generating structured Story
+[2025-02-06T22:03:23.501Z] [LOG] Generated structured thought: {
+  "thought": "As the sun dipped below the horizon, casting an orange glow over the town of Eldergrove, Sarah found herself standing at the edge of the mysterious forest that bordered her backyard. She had always heard stories of the enchanted forest from her grandmother, tales filled with magical creatures and hidden secrets. But tonight, something felt different. A peculiar light flickered in the depths of the trees, beckoning her to uncover its source. With a mix of trepidation and curiosity, Sarah decided to step into the forest, unaware that this journey would unravel secrets about her family's past and her own hidden abilities.",
+  "storyProgress": 55,
+  "phase": "climax",
+  "isComplete": false
+}
+[2025-02-06T22:03:23.502Z] [LOG] Generating structured Story
+[2025-02-06T22:03:26.202Z] [LOG] Generated structured thought: {
+  "thought": "As the storm raged on, the once divided group found themselves cornered by the very forces they had underestimated. The ancient temple's secrets were unraveling at an alarming rate, and the shadowy figures that had pursued them were closing in. In a desperate bid to protect the artifact they had discovered, Alex, the group's leader, made the bold decision to confront the shadows head-on, hoping to buy time for the others to escape. This act of bravery sparked a newfound unity among the group, as they rallied together, determined to overcome the odds and protect the artifact at all costs.",
+  "storyProgress": 70,
+  "phase": "climax",
+  "isComplete": false
+}
+[2025-02-06T22:03:26.203Z] [LOG] Generating structured Story
+[2025-02-06T22:03:28.863Z] [LOG] Generated structured thought: {
+  "thought": "As the storm intensified, the ancient amulet in Elara's hand began to glow with an ethereal light, resonating with the energy of the hidden portal. The winds howled around her, but she stood resolute, knowing this was the moment everything hinged upon. With a deep breath, she channeled all her courage and whispered the incantation her grandmother had taught her, feeling the power surge through her veins. The portal flickered and then burst open with a blinding flash, revealing the path to the realm beyond. Elara knew there was no turning back; she had to step through and confront the shadow that threatened her world.",
+  "storyProgress": 80,
+  "phase": "climax",
+  "isComplete": false
+}
+[2025-02-06T22:03:28.865Z] [LOG] Generating structured Story
+[2025-02-06T22:03:32.041Z] [LOG] Generated structured thought: {
+  "thought": "As the storm raged on, the final confrontation between Elara and the Shadow King reached its peak. With a desperate cry, Elara unleashed the full power of the ancient amulet, causing a blinding light to surge through the battlefield. The Shadow King staggered, his dark form wavering as the light pierced through the shadows, revealing his true, vulnerable form. Elara knew this was her only chance to end his reign of terror once and for all.",
+  "storyProgress": 90,
+  "phase": "resolution",
+  "isComplete": false
+}
+[2025-02-06T22:03:32.043Z] [LOG] Generating structured Story
+[2025-02-06T22:03:35.514Z] [LOG] Story is complete..
+[2025-02-06T22:03:35.514Z] [LOG] Generated structured thought: {
+  "thought": "As the golden rays of the setting sun bathed the landscape, Alex and Jamie stood side by side, their faces reflecting relief and a newfound understanding. The trials they had faced over the past weeks had forged a bond stronger than they could have ever imagined. With the mystery of the ancient map finally unraveled and the hidden treasure revealed, they realized it was not the gold or jewels that mattered, but the journey and the companionship they had shared. With a heartfelt promise to cherish the memories and to seek out new adventures together, they turned away from the now peaceful valley, ready to face the future with hope and courage.",
+  "storyProgress": 100,
+  "phase": "resolution",
+  "isComplete": true
+}
+[2025-02-06T22:03:35.515Z] [LOG] Complete Story Generated: {
+  "subject": "you are talking about the good things about Tunisia",
+  "totalThoughts": 8,
+  "story": {
+    "summary": "Story completed successfully",
+    "narrative": [
+      {
+        "part": 1,
+        "thought": "In the quaint village of Elderglen, nestled between misty mountains and lush, whispering forests, a young blacksmith named Bor discovered an ancient, rust-covered key while digging a new well. Intrigued by its intricate design and mysterious aura, Bor felt an inexplicable pull to uncover the secrets it held."
+      },
+      {
+        "part": 2,
+        "thought": "In the bustling city of Eldoria, a place where magic and technology intertwine seamlessly, young inventor Aria has just unveiled her latest creation: a device capable of harnessing the city's ambient magical energy. As she demonstrates its potential to a skeptical crowd at the annual Inventor's Fair, a mysterious figure watches from the shadows, intrigued by the device's unique capabilities."
+      },
+      {
+        "part": 3,
+        "thought": "As Sarah stepped into the ancient library, the air was thick with the scent of old parchment and mystery. She had heard rumors of a hidden manuscript that could unlock the secrets of the past. Determined to uncover it, she began her search, aware that others might be looking for it too."
+      },
+      {
+        "part": 4,
+        "thought": "As the sun dipped below the horizon, casting an orange glow over the town of Eldergrove, Sarah found herself standing at the edge of the mysterious forest that bordered her backyard. She had always heard stories of the enchanted forest from her grandmother, tales filled with magical creatures and hidden secrets. But tonight, something felt different. A peculiar light flickered in the depths of the trees, beckoning her to uncover its source. With a mix of trepidation and curiosity, Sarah decided to step into the forest, unaware that this journey would unravel secrets about her family's past and her own hidden abilities."
+      },
+      {
+        "part": 5,
+        "thought": "As the storm raged on, the once divided group found themselves cornered by the very forces they had underestimated. The ancient temple's secrets were unraveling at an alarming rate, and the shadowy figures that had pursued them were closing in. In a desperate bid to protect the artifact they had discovered, Alex, the group's leader, made the bold decision to confront the shadows head-on, hoping to buy time for the others to escape. This act of bravery sparked a newfound unity among the group, as they rallied together, determined to overcome the odds and protect the artifact at all costs."
+      },
+      {
+        "part": 6,
+        "thought": "As the storm intensified, the ancient amulet in Elara's hand began to glow with an ethereal light, resonating with the energy of the hidden portal. The winds howled around her, but she stood resolute, knowing this was the moment everything hinged upon. With a deep breath, she channeled all her courage and whispered the incantation her grandmother had taught her, feeling the power surge through her veins. The portal flickered and then burst open with a blinding flash, revealing the path to the realm beyond. Elara knew there was no turning back; she had to step through and confront the shadow that threatened her world."
+      },
+      {
+        "part": 7,
+        "thought": "As the storm raged on, the final confrontation between Elara and the Shadow King reached its peak. With a desperate cry, Elara unleashed the full power of the ancient amulet, causing a blinding light to surge through the battlefield. The Shadow King staggered, his dark form wavering as the light pierced through the shadows, revealing his true, vulnerable form. Elara knew this was her only chance to end his reign of terror once and for all."
+      },
+      {
+        "part": 8,
+        "thought": "As the golden rays of the setting sun bathed the landscape, Alex and Jamie stood side by side, their faces reflecting relief and a newfound understanding. The trials they had faced over the past weeks had forged a bond stronger than they could have ever imagined. With the mystery of the ancient map finally unraveled and the hidden treasure revealed, they realized it was not the gold or jewels that mattered, but the journey and the companionship they had shared. With a heartfelt promise to cherish the memories and to seek out new adventures together, they turned away from the now peaceful valley, ready to face the future with hope and courage."
+      }
+    ],
+    "fullText": "In the quaint village of Elderglen, nestled between misty mountains and lush, whispering forests, a young blacksmith named Bor discovered an ancient, rust-covered key while digging a new well. Intrigued by its intricate design and mysterious aura, Bor felt an inexplicable pull to uncover the secrets it held.\n\nIn the bustling city of Eldoria, a place where magic and technology intertwine seamlessly, young inventor Aria has just unveiled her latest creation: a device capable of harnessing the city's ambient magical energy. As she demonstrates its potential to a skeptical crowd at the annual Inventor's Fair, a mysterious figure watches from the shadows, intrigued by the device's unique capabilities.\n\nAs Sarah stepped into the ancient library, the air was thick with the scent of old parchment and mystery. She had heard rumors of a hidden manuscript that could unlock the secrets of the past. Determined to uncover it, she began her search, aware that others might be looking for it too.\n\nAs the sun dipped below the horizon, casting an orange glow over the town of Eldergrove, Sarah found herself standing at the edge of the mysterious forest that bordered her backyard. She had always heard stories of the enchanted forest from her grandmother, tales filled with magical creatures and hidden secrets. But tonight, something felt different. A peculiar light flickered in the depths of the trees, beckoning her to uncover its source. With a mix of trepidation and curiosity, Sarah decided to step into the forest, unaware that this journey would unravel secrets about her family's past and her own hidden abilities.\n\nAs the storm raged on, the once divided group found themselves cornered by the very forces they had underestimated. The ancient temple's secrets were unraveling at an alarming rate, and the shadowy figures that had pursued them were closing in. In a desperate bid to protect the artifact they had discovered, Alex, the group's leader, made the bold decision to confront the shadows head-on, hoping to buy time for the others to escape. This act of bravery sparked a newfound unity among the group, as they rallied together, determined to overcome the odds and protect the artifact at all costs.\n\nAs the storm intensified, the ancient amulet in Elara's hand began to glow with an ethereal light, resonating with the energy of the hidden portal. The winds howled around her, but she stood resolute, knowing this was the moment everything hinged upon. With a deep breath, she channeled all her courage and whispered the incantation her grandmother had taught her, feeling the power surge through her veins. The portal flickered and then burst open with a blinding flash, revealing the path to the realm beyond. Elara knew there was no turning back; she had to step through and confront the shadow that threatened her world.\n\nAs the storm raged on, the final confrontation between Elara and the Shadow King reached its peak. With a desperate cry, Elara unleashed the full power of the ancient amulet, causing a blinding light to surge through the battlefield. The Shadow King staggered, his dark form wavering as the light pierced through the shadows, revealing his true, vulnerable form. Elara knew this was her only chance to end his reign of terror once and for all.\n\nAs the golden rays of the setting sun bathed the landscape, Alex and Jamie stood side by side, their faces reflecting relief and a newfound understanding. The trials they had faced over the past weeks had forged a bond stronger than they could have ever imagined. With the mystery of the ancient map finally unraveled and the hidden treasure revealed, they realized it was not the gold or jewels that mattered, but the journey and the companionship they had shared. With a heartfelt promise to cherish the memories and to seek out new adventures together, they turned away from the now peaceful valley, ready to face the future with hope and courage."
+  },
+  "finalState": {
+    "phase": "resolution",
+    "progress": 100
+  }
+}
+[2025-02-06T22:03:35.518Z] [LOG] Story Task processing finished {
+  "startTime": "Feb 6, 2025, 10:03:12 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:35 PM GMT",
+  "totalDuration": "23.48 seconds"
+}
+[2025-02-06T22:03:35.519Z] [LOG] Complete Story Task History {
+  "totalCycles": 1,
+  "averageCycleDuration": 0,
+  "cycles": [
+    {
+      "status": "in-progress",
+      "startTime": "2025-02-06T22:03:12.040Z",
+      "completedTasks": [],
+      "failedTasks": [],
+      "taskPlan": [
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory"
+      ]
+    }
+  ],
+  "taskSuccessRates": {},
+  "mostTimeConsumingTasks": []
+}
+[2025-02-06T22:03:35.530Z] [LOG] Task completed {
+  "task": "startStructuredStory",
+  "startTime": "Feb 6, 2025, 10:03:12 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:35 PM GMT",
+  "duration": "23.48 seconds",
+  "remainingTasks": 5
+}
+[2025-02-06T22:03:37.534Z] [LOG] Starting task: startStructuredStory {
+  "startTime": "Feb 6, 2025, 10:03:37 PM GMT",
+  "remainingTasks": 5
+}
+[2025-02-06T22:03:37.536Z] [LOG] Generating structured Story
+[2025-02-06T22:03:40.973Z] [LOG] Story is complete..
+[2025-02-06T22:03:40.973Z] [LOG] Generated structured thought: {
+  "thought": "As the sun set on the horizon, casting a golden glow over the peaceful village of Eldoria, the once-feared sorcerer, Eldrin, stood at the edge of the forest. With the resolution of past conflicts and the newfound harmony between the villagers and the mystical creatures of the forest, Eldrin felt a sense of belonging he had never experienced before. The villagers, now his friends, gathered around him, celebrating the unity that had been achieved. Eldrin smiled, knowing his journey had finally come to a fulfilling end, and peace would reign in Eldoria for generations to come.",
+  "storyProgress": 100,
+  "phase": "resolution",
+  "isComplete": true
+}
+[2025-02-06T22:03:40.973Z] [LOG] Complete Story Generated: {
+  "subject": "you are talking about the good things about Tunisia",
+  "totalThoughts": 1,
+  "story": {
+    "summary": "Story completed successfully",
+    "narrative": [
+      {
+        "part": 1,
+        "thought": "As the sun set on the horizon, casting a golden glow over the peaceful village of Eldoria, the once-feared sorcerer, Eldrin, stood at the edge of the forest. With the resolution of past conflicts and the newfound harmony between the villagers and the mystical creatures of the forest, Eldrin felt a sense of belonging he had never experienced before. The villagers, now his friends, gathered around him, celebrating the unity that had been achieved. Eldrin smiled, knowing his journey had finally come to a fulfilling end, and peace would reign in Eldoria for generations to come."
+      }
+    ],
+    "fullText": "As the sun set on the horizon, casting a golden glow over the peaceful village of Eldoria, the once-feared sorcerer, Eldrin, stood at the edge of the forest. With the resolution of past conflicts and the newfound harmony between the villagers and the mystical creatures of the forest, Eldrin felt a sense of belonging he had never experienced before. The villagers, now his friends, gathered around him, celebrating the unity that had been achieved. Eldrin smiled, knowing his journey had finally come to a fulfilling end, and peace would reign in Eldoria for generations to come."
+  },
+  "finalState": {
+    "phase": "resolution",
+    "progress": 100
+  }
+}
+[2025-02-06T22:03:40.975Z] [LOG] Story Task processing finished {
+  "startTime": "Feb 6, 2025, 10:03:37 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:40 PM GMT",
+  "totalDuration": "3.44 seconds"
+}
+[2025-02-06T22:03:40.975Z] [LOG] Complete Story Task History {
+  "totalCycles": 1,
+  "averageCycleDuration": 0,
+  "cycles": [
+    {
+      "status": "in-progress",
+      "startTime": "2025-02-06T22:03:12.040Z",
+      "completedTasks": [
+        {
+          "name": "startStructuredStory",
+          "duration": 23480,
+          "startTime": "2025-02-06T22:03:12.040Z",
+          "endTime": "2025-02-06T22:03:35.520Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory"
+      ]
+    }
+  ],
+  "taskSuccessRates": {
+    "startStructuredStory": {
+      "success": 1,
+      "failed": 0,
+      "rate": "100.0%"
+    }
+  },
+  "mostTimeConsumingTasks": [
+    {
+      "taskName": "startStructuredStory",
+      "averageDuration": 23480,
+      "totalDuration": 23480,
+      "executionCount": 1
+    }
+  ]
+}
+[2025-02-06T22:03:40.976Z] [LOG] Task completed {
+  "task": "startStructuredStory",
+  "startTime": "Feb 6, 2025, 10:03:37 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:40 PM GMT",
+  "duration": "3.44 seconds",
+  "remainingTasks": 4
+}
+[2025-02-06T22:03:42.980Z] [LOG] Starting task: startStructuredStory {
+  "startTime": "Feb 6, 2025, 10:03:42 PM GMT",
+  "remainingTasks": 4
+}
+[2025-02-06T22:03:42.982Z] [LOG] Generating structured Story
+[2025-02-06T22:03:47.368Z] [LOG] Story is complete..
+[2025-02-06T22:03:47.368Z] [LOG] Generated structured thought: {
+  "thought": "As the sun set on the horizon, casting a golden hue over the tranquil village, Emily and Lucas stood side by side, watching the remnants of the storm that had tested their bond dissipate into the evening sky. The once turbulent winds of misunderstanding and doubt had given way to a gentle breeze of clarity and newfound appreciation for each other. With a shared smile, they realized that their journey had not only strengthened their relationship but also taught them the value of patience and communication. Their hearts, now unburdened, were free to embrace the future with hope and love.",
+  "storyProgress": 100,
+  "phase": "resolution",
+  "isComplete": true
+}
+[2025-02-06T22:03:47.369Z] [LOG] Complete Story Generated: {
+  "subject": "you are talking about the good things about Tunisia",
+  "totalThoughts": 1,
+  "story": {
+    "summary": "Story completed successfully",
+    "narrative": [
+      {
+        "part": 1,
+        "thought": "As the sun set on the horizon, casting a golden hue over the tranquil village, Emily and Lucas stood side by side, watching the remnants of the storm that had tested their bond dissipate into the evening sky. The once turbulent winds of misunderstanding and doubt had given way to a gentle breeze of clarity and newfound appreciation for each other. With a shared smile, they realized that their journey had not only strengthened their relationship but also taught them the value of patience and communication. Their hearts, now unburdened, were free to embrace the future with hope and love."
+      }
+    ],
+    "fullText": "As the sun set on the horizon, casting a golden hue over the tranquil village, Emily and Lucas stood side by side, watching the remnants of the storm that had tested their bond dissipate into the evening sky. The once turbulent winds of misunderstanding and doubt had given way to a gentle breeze of clarity and newfound appreciation for each other. With a shared smile, they realized that their journey had not only strengthened their relationship but also taught them the value of patience and communication. Their hearts, now unburdened, were free to embrace the future with hope and love."
+  },
+  "finalState": {
+    "phase": "resolution",
+    "progress": 100
+  }
+}
+[2025-02-06T22:03:47.370Z] [LOG] Story Task processing finished {
+  "startTime": "Feb 6, 2025, 10:03:42 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:47 PM GMT",
+  "totalDuration": "4.39 seconds"
+}
+[2025-02-06T22:03:47.371Z] [LOG] Complete Story Task History {
+  "totalCycles": 1,
+  "averageCycleDuration": 0,
+  "cycles": [
+    {
+      "status": "in-progress",
+      "startTime": "2025-02-06T22:03:12.040Z",
+      "completedTasks": [
+        {
+          "name": "startStructuredStory",
+          "duration": 23480,
+          "startTime": "2025-02-06T22:03:12.040Z",
+          "endTime": "2025-02-06T22:03:35.520Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 3442,
+          "startTime": "2025-02-06T22:03:37.533Z",
+          "endTime": "2025-02-06T22:03:40.975Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory"
+      ]
+    }
+  ],
+  "taskSuccessRates": {
+    "startStructuredStory": {
+      "success": 2,
+      "failed": 0,
+      "rate": "100.0%"
+    }
+  },
+  "mostTimeConsumingTasks": [
+    {
+      "taskName": "startStructuredStory",
+      "averageDuration": 13461,
+      "totalDuration": 26922,
+      "executionCount": 2
+    }
+  ]
+}
+[2025-02-06T22:03:47.372Z] [LOG] Task completed {
+  "task": "startStructuredStory",
+  "startTime": "Feb 6, 2025, 10:03:42 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:47 PM GMT",
+  "duration": "4.39 seconds",
+  "remainingTasks": 3
+}
+[2025-02-06T22:03:49.374Z] [LOG] Starting task: startStructuredStory {
+  "startTime": "Feb 6, 2025, 10:03:49 PM GMT",
+  "remainingTasks": 3
+}
+[2025-02-06T22:03:49.375Z] [LOG] Generating structured Story
+[2025-02-06T22:03:53.192Z] [LOG] Story is complete..
+[2025-02-06T22:03:53.192Z] [LOG] Generated structured thought: {
+  "thought": "As the sun set over the peaceful village, the townsfolk gathered in the square to celebrate their newfound harmony. The once-feuding families, having reconciled through the courage and wisdom of young Elara, shared laughter and stories around the warm glow of the bonfire. Elara, now regarded as a hero, stood with her family, feeling a deep sense of fulfillment and belonging. With the stars twinkling above, she knew that the bonds forged through understanding and forgiveness would guide the village to a prosperous future.",
+  "storyProgress": 100,
+  "phase": "resolution",
+  "isComplete": true
+}
+[2025-02-06T22:03:53.193Z] [LOG] Complete Story Generated: {
+  "subject": "you are talking about the good things about Tunisia",
+  "totalThoughts": 1,
+  "story": {
+    "summary": "Story completed successfully",
+    "narrative": [
+      {
+        "part": 1,
+        "thought": "As the sun set over the peaceful village, the townsfolk gathered in the square to celebrate their newfound harmony. The once-feuding families, having reconciled through the courage and wisdom of young Elara, shared laughter and stories around the warm glow of the bonfire. Elara, now regarded as a hero, stood with her family, feeling a deep sense of fulfillment and belonging. With the stars twinkling above, she knew that the bonds forged through understanding and forgiveness would guide the village to a prosperous future."
+      }
+    ],
+    "fullText": "As the sun set over the peaceful village, the townsfolk gathered in the square to celebrate their newfound harmony. The once-feuding families, having reconciled through the courage and wisdom of young Elara, shared laughter and stories around the warm glow of the bonfire. Elara, now regarded as a hero, stood with her family, feeling a deep sense of fulfillment and belonging. With the stars twinkling above, she knew that the bonds forged through understanding and forgiveness would guide the village to a prosperous future."
+  },
+  "finalState": {
+    "phase": "resolution",
+    "progress": 100
+  }
+}
+[2025-02-06T22:03:53.194Z] [LOG] Story Task processing finished {
+  "startTime": "Feb 6, 2025, 10:03:49 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:53 PM GMT",
+  "totalDuration": "3.82 seconds"
+}
+[2025-02-06T22:03:53.194Z] [LOG] Complete Story Task History {
+  "totalCycles": 1,
+  "averageCycleDuration": 0,
+  "cycles": [
+    {
+      "status": "in-progress",
+      "startTime": "2025-02-06T22:03:12.040Z",
+      "completedTasks": [
+        {
+          "name": "startStructuredStory",
+          "duration": 23480,
+          "startTime": "2025-02-06T22:03:12.040Z",
+          "endTime": "2025-02-06T22:03:35.520Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 3442,
+          "startTime": "2025-02-06T22:03:37.533Z",
+          "endTime": "2025-02-06T22:03:40.975Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 4393,
+          "startTime": "2025-02-06T22:03:42.979Z",
+          "endTime": "2025-02-06T22:03:47.372Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory"
+      ]
+    }
+  ],
+  "taskSuccessRates": {
+    "startStructuredStory": {
+      "success": 3,
+      "failed": 0,
+      "rate": "100.0%"
+    }
+  },
+  "mostTimeConsumingTasks": [
+    {
+      "taskName": "startStructuredStory",
+      "averageDuration": 10438.333333333334,
+      "totalDuration": 31315,
+      "executionCount": 3
+    }
+  ]
+}
+[2025-02-06T22:03:53.196Z] [LOG] Task completed {
+  "task": "startStructuredStory",
+  "startTime": "Feb 6, 2025, 10:03:49 PM GMT",
+  "endTime": "Feb 6, 2025, 10:03:53 PM GMT",
+  "duration": "3.82 seconds",
+  "remainingTasks": 2
+}
+[2025-02-06T22:03:55.198Z] [LOG] Starting task: startStructuredStory {
+  "startTime": "Feb 6, 2025, 10:03:55 PM GMT",
+  "remainingTasks": 2
+}
+[2025-02-06T22:03:55.199Z] [LOG] Generating structured Story
+[2025-02-06T22:04:00.128Z] [LOG] Story is complete..
+[2025-02-06T22:04:00.129Z] [LOG] Generated structured thought: {
+  "thought": "As the sun set over the tranquil village, Emily and her newfound friends gathered at the edge of the forest where their adventure had begun. The magical amulet, now glowing softly in her hands, had been restored, and the forest creatures were finally at peace. They shared stories of bravery and camaraderie, knowing that their bond had been forged in the fires of challenge and triumph. With a sense of fulfillment, Emily returned the amulet to the ancient oak, ensuring the forest's protection for generations to come. The village rejoiced, and Emily realized that her journey had not only saved the forest but had also helped her discover the courage and friendship she never knew she had.",
+  "storyProgress": 100,
+  "phase": "resolution",
+  "isComplete": true
+}
+[2025-02-06T22:04:00.129Z] [LOG] Complete Story Generated: {
+  "subject": "you are talking about the good things about Tunisia",
+  "totalThoughts": 1,
+  "story": {
+    "summary": "Story completed successfully",
+    "narrative": [
+      {
+        "part": 1,
+        "thought": "As the sun set over the tranquil village, Emily and her newfound friends gathered at the edge of the forest where their adventure had begun. The magical amulet, now glowing softly in her hands, had been restored, and the forest creatures were finally at peace. They shared stories of bravery and camaraderie, knowing that their bond had been forged in the fires of challenge and triumph. With a sense of fulfillment, Emily returned the amulet to the ancient oak, ensuring the forest's protection for generations to come. The village rejoiced, and Emily realized that her journey had not only saved the forest but had also helped her discover the courage and friendship she never knew she had."
+      }
+    ],
+    "fullText": "As the sun set over the tranquil village, Emily and her newfound friends gathered at the edge of the forest where their adventure had begun. The magical amulet, now glowing softly in her hands, had been restored, and the forest creatures were finally at peace. They shared stories of bravery and camaraderie, knowing that their bond had been forged in the fires of challenge and triumph. With a sense of fulfillment, Emily returned the amulet to the ancient oak, ensuring the forest's protection for generations to come. The village rejoiced, and Emily realized that her journey had not only saved the forest but had also helped her discover the courage and friendship she never knew she had."
+  },
+  "finalState": {
+    "phase": "resolution",
+    "progress": 100
+  }
+}
+[2025-02-06T22:04:00.130Z] [LOG] Story Task processing finished {
+  "startTime": "Feb 6, 2025, 10:03:55 PM GMT",
+  "endTime": "Feb 6, 2025, 10:04:00 PM GMT",
+  "totalDuration": "4.93 seconds"
+}
+[2025-02-06T22:04:00.130Z] [LOG] Complete Story Task History {
+  "totalCycles": 1,
+  "averageCycleDuration": 0,
+  "cycles": [
+    {
+      "status": "in-progress",
+      "startTime": "2025-02-06T22:03:12.040Z",
+      "completedTasks": [
+        {
+          "name": "startStructuredStory",
+          "duration": 23480,
+          "startTime": "2025-02-06T22:03:12.040Z",
+          "endTime": "2025-02-06T22:03:35.520Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 3442,
+          "startTime": "2025-02-06T22:03:37.533Z",
+          "endTime": "2025-02-06T22:03:40.975Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 4393,
+          "startTime": "2025-02-06T22:03:42.979Z",
+          "endTime": "2025-02-06T22:03:47.372Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 3821,
+          "startTime": "2025-02-06T22:03:49.374Z",
+          "endTime": "2025-02-06T22:03:53.195Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory"
+      ]
+    }
+  ],
+  "taskSuccessRates": {
+    "startStructuredStory": {
+      "success": 4,
+      "failed": 0,
+      "rate": "100.0%"
+    }
+  },
+  "mostTimeConsumingTasks": [
+    {
+      "taskName": "startStructuredStory",
+      "averageDuration": 8784,
+      "totalDuration": 35136,
+      "executionCount": 4
+    }
+  ]
+}
+[2025-02-06T22:04:00.131Z] [LOG] Task completed {
+  "task": "startStructuredStory",
+  "startTime": "Feb 6, 2025, 10:03:55 PM GMT",
+  "endTime": "Feb 6, 2025, 10:04:00 PM GMT",
+  "duration": "4.93 seconds",
+  "remainingTasks": 1
+}
+[2025-02-06T22:04:02.133Z] [LOG] Starting task: startStructuredStory {
+  "startTime": "Feb 6, 2025, 10:04:02 PM GMT",
+  "remainingTasks": 1
+}
+[2025-02-06T22:04:02.134Z] [LOG] Generating structured Story
+[2025-02-06T22:04:07.302Z] [LOG] Story is complete..
+[2025-02-06T22:04:07.303Z] [LOG] Generated structured thought: {
+  "thought": "As the first rays of dawn broke over the horizon, illuminating the once tumultuous battlefield, a sense of peace and relief washed over the survivors. The heroes, weary but victorious, gathered to celebrate their unity and resilience. The kingdom had been saved, and with it, a new era of prosperity was set to begin. Old grudges were buried, and alliances were forged anew, ensuring that the sacrifices made were not in vain. With the threat vanquished, life could finally return to normal, and the people looked forward to rebuilding their lands and lives.",
+  "storyProgress": 100,
+  "phase": "resolution",
+  "isComplete": true
+}
+[2025-02-06T22:04:07.304Z] [LOG] Complete Story Generated: {
+  "subject": "you are talking about the good things about Tunisia",
+  "totalThoughts": 1,
+  "story": {
+    "summary": "Story completed successfully",
+    "narrative": [
+      {
+        "part": 1,
+        "thought": "As the first rays of dawn broke over the horizon, illuminating the once tumultuous battlefield, a sense of peace and relief washed over the survivors. The heroes, weary but victorious, gathered to celebrate their unity and resilience. The kingdom had been saved, and with it, a new era of prosperity was set to begin. Old grudges were buried, and alliances were forged anew, ensuring that the sacrifices made were not in vain. With the threat vanquished, life could finally return to normal, and the people looked forward to rebuilding their lands and lives."
+      }
+    ],
+    "fullText": "As the first rays of dawn broke over the horizon, illuminating the once tumultuous battlefield, a sense of peace and relief washed over the survivors. The heroes, weary but victorious, gathered to celebrate their unity and resilience. The kingdom had been saved, and with it, a new era of prosperity was set to begin. Old grudges were buried, and alliances were forged anew, ensuring that the sacrifices made were not in vain. With the threat vanquished, life could finally return to normal, and the people looked forward to rebuilding their lands and lives."
+  },
+  "finalState": {
+    "phase": "resolution",
+    "progress": 100
+  }
+}
+[2025-02-06T22:04:07.306Z] [LOG] Story Task processing finished {
+  "startTime": "Feb 6, 2025, 10:04:02 PM GMT",
+  "endTime": "Feb 6, 2025, 10:04:07 PM GMT",
+  "totalDuration": "5.17 seconds"
+}
+[2025-02-06T22:04:07.306Z] [LOG] Complete Story Task History {
+  "totalCycles": 1,
+  "averageCycleDuration": 0,
+  "cycles": [
+    {
+      "status": "in-progress",
+      "startTime": "2025-02-06T22:03:12.040Z",
+      "completedTasks": [
+        {
+          "name": "startStructuredStory",
+          "duration": 23480,
+          "startTime": "2025-02-06T22:03:12.040Z",
+          "endTime": "2025-02-06T22:03:35.520Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 3442,
+          "startTime": "2025-02-06T22:03:37.533Z",
+          "endTime": "2025-02-06T22:03:40.975Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 4393,
+          "startTime": "2025-02-06T22:03:42.979Z",
+          "endTime": "2025-02-06T22:03:47.372Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 3821,
+          "startTime": "2025-02-06T22:03:49.374Z",
+          "endTime": "2025-02-06T22:03:53.195Z"
+        },
+        {
+          "name": "startStructuredStory",
+          "duration": 4933,
+          "startTime": "2025-02-06T22:03:55.198Z",
+          "endTime": "2025-02-06T22:04:00.131Z"
+        }
+      ],
+      "failedTasks": [],
+      "taskPlan": [
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory",
+        "startStructuredStory"
+      ]
+    }
+  ],
+  "taskSuccessRates": {
+    "startStructuredStory": {
+      "success": 5,
+      "failed": 0,
+      "rate": "100.0%"
+    }
+  },
+  "mostTimeConsumingTasks": [
+    {
+      "taskName": "startStructuredStory",
+      "averageDuration": 8013.8,
+      "totalDuration": 40069,
+      "executionCount": 5
+    }
+  ]
+}
+[2025-02-06T22:04:07.308Z] [LOG] Task completed {
+  "task": "startStructuredStory",
+  "startTime": "Feb 6, 2025, 10:04:02 PM GMT",
+  "endTime": "Feb 6, 2025, 10:04:07 PM GMT",
+  "duration": "5.17 seconds",
+  "remainingTasks": 0
+}
+[2025-02-06T22:04:09.312Z] [LOG] Task cycle completed {
+  "cycleSummary": {
+    "duration": "57.27 seconds",
+    "startTime": "Feb 6, 2025, 10:03:12 PM GMT",
+    "endTime": "Feb 6, 2025, 10:04:09 PM GMT",
+    "status": "completed",
+    "taskPlan": [
+      "startStructuredStory",
+      "startStructuredStory",
+      "startStructuredStory",
+      "startStructuredStory",
+      "startStructuredStory",
+      "startStructuredStory"
+    ],
+    "completedTasks": [
+      {
+        "name": "startStructuredStory",
+        "duration": "23.48 seconds",
+        "startTime": "Feb 6, 2025, 10:03:12 PM GMT",
+        "endTime": "Feb 6, 2025, 10:03:35 PM GMT"
+      },
+      {
+        "name": "startStructuredStory",
+        "duration": "3.44 seconds",
+        "startTime": "Feb 6, 2025, 10:03:37 PM GMT",
+        "endTime": "Feb 6, 2025, 10:03:40 PM GMT"
+      },
+      {
+        "name": "startStructuredStory",
+        "duration": "4.39 seconds",
+        "startTime": "Feb 6, 2025, 10:03:42 PM GMT",
+        "endTime": "Feb 6, 2025, 10:03:47 PM GMT"
+      },
+      {
+        "name": "startStructuredStory",
+        "duration": "3.82 seconds",
+        "startTime": "Feb 6, 2025, 10:03:49 PM GMT",
+        "endTime": "Feb 6, 2025, 10:03:53 PM GMT"
+      },
+      {
+        "name": "startStructuredStory",
+        "duration": "4.93 seconds",
+        "startTime": "Feb 6, 2025, 10:03:55 PM GMT",
+        "endTime": "Feb 6, 2025, 10:04:00 PM GMT"
+      },
+      {
+        "name": "startStructuredStory",
+        "duration": "5.17 seconds",
+        "startTime": "Feb 6, 2025, 10:04:02 PM GMT",
+        "endTime": "Feb 6, 2025, 10:04:07 PM GMT"
+      }
+    ],
+    "failedTasks": []
+  },
+  "currentStats": {
+    "averageCycleDuration": "57.27 seconds",
+    "taskSuccessRates": {
+      "startStructuredStory": {
+        "success": 6,
+        "failed": 0,
+        "rate": "100.0%"
+      }
+    },
+    "mostTimeConsumingTasks": [
+      {
+        "taskName": "startStructuredStory",
+        "averageDuration": "7.54 seconds",
+        "totalDuration": "45.24 seconds",
+        "executionCount": 6
+      }
+    ]
+  }
+}
