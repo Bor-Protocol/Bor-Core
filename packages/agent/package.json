@@ -16,7 +16,7 @@
         "@algo3b/adapter-postgres": "workspace:*",
         "@algo3b/adapter-sqlite": "workspace:*",
         "@algo3b/client-direct": "workspace:*",
-      
+        "@algo3b/plugin-web-search": "workspace:*",
         "@algo3b/client-borp": "workspace:*",
         "@algo3b/plugin-node": "workspace:*",
         "readline": "^1.3.0",

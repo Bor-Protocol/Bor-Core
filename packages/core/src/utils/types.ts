@@ -319,6 +319,7 @@ export type Plugin = {
     providers?: Provider[];
     evaluators?: Evaluator[];
     services?: Service[];
+    clients?: Client[];
 };
 
 export enum Clients {
@@ -645,4 +646,5 @@ export enum ServiceType {
     BROWSER = "browser",
     SPEECH_GENERATION = "speech_generation",
     PDF = "pdf",
+    WEB_SEARCH = "web_search",
 }

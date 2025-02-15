@@ -1,0 +1,31 @@
+{
+    "name": "@algo3b/plugin-web-search",
+    "version": "0.0.1",
+    "main": "dist/index.js",
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsup --format esm --dts",
+        "start": "tsc && node --loader ts-node/esm src/index.ts",
+        "dev": "tsc && nodemon --watch src --watch ../core/dist --ext ts,json --exec 'node --loader ts-node/esm' src/index.ts",
+        "start:service:all": "pm2 start pnpm --name=\"all\" --restart-delay=3000 --max-restarts=10 -- run start:all",
+        "stop:service:all": "pm2 stop all",
+        "start:all": "node --loader ts-node/esm src/index.ts --characters=\"../characters/eliza.json\",\"../characters/degenspartan.json\",\"../characters/ruby.json\",\"../characters/pmairca.json\""
+    },
+    "dependencies": {
+        "@algo3b/aikhwarizmi": "workspace:*",
+        "@tavily/core": "^0.0.2",
+        "tsup": "8.3.5",
+        "js-tiktoken": "1.0.15"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "1.5.3"
+    },
+   
+    "peerDependencies": {
+        "whatwg-url": "7.1.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

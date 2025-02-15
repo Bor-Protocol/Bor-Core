@@ -12,6 +12,7 @@ import {
     ModelProviderName,
 } from "@algo3b/aikhwarizmi/src/utils/types.ts";
 import { nodePlugin } from "@algo3b/plugin-node/src/index.ts";
+import { webSearchPlugin } from "@algo3b/plugin-web-search/src/index.ts";
 import Database from "better-sqlite3";
 import fs from "fs";
 
@@ -214,6 +215,7 @@ export async function createAgent(
         character,
         plugins: [
             nodePlugin,
+            webSearchPlugin,
         
                 null
         ].filter(Boolean),
