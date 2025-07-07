@@ -254,6 +254,7 @@ export class BorpClient {
     public async startTaskProcessing() {
         try {
             const startTime = new Date();
+            await this.generateSearch("superman vs batman");
             if (this.mode === 'startStructuredStory') {
                 this.taskQueueConstants = [
 
@@ -484,7 +485,9 @@ export class BorpClient {
 
                 await new Promise(resolve => setTimeout(resolve, 3000));
             } catch (cycleError) {
-                const currentEntry = this.taskHistory[this.taskHistory.length - 1];
+                const currentEntry = this.
+                
+                taskHistory[this.taskHistory.length - 1];
                 if (currentEntry && currentEntry.status === 'in-progress') {
                     currentEntry.endTime = new Date();
                     currentEntry.status = 'failed';
@@ -1035,6 +1038,23 @@ export class BorpClient {
     }
 
 
+    async generateSearch(text: string): Promise<string> {
+     aiKhwarizmiLogger.log("borp: search-web", { text });
+         const agentName = this.runtime.character.name;
+         aiKhwarizmiLogger.log(`borp (${agentName}): starting search-web generation for text:`, { text });
+     
+         // Get speech service and generate audio
+         const WEBSEARCHService = await this.runtime.getService(ServiceType.WEB_SEARCH) as any;
+         const searchService = WEBSEARCHService.getInstance();
+         await searchService.initialize(this.runtime);
+         const webresult = await searchService.search(text);
+         console.log("webresult",webresult);
+     return "https://borstorage.b-cdn.net/speech/1737312298831.mp3";
+     
+    }
+
+
+
 
 
     private async _makeApiCall(endpoint: string, method: string, body?: any) {
@@ -1351,11 +1371,14 @@ json
         aiKhwarizmiLogger.log(`Generated Task Plan: ${thoughtText}`);
 
         // Parse the JSON from the markdown code block
+        console.log("before",thoughtText);
         const jsonString = thoughtText
             .replace(/^```json\n/, '')  // Remove starting ```json
+            .replace(/^json  \n/, '')
             .replace(/\n```$/, '');     // Remove ending ```
-
+        console.log("after",jsonString);
         const parsed = JSON.parse(jsonString);
+
 
         // Extract just the names into an array
         const namesArray = parsed.taskQueueConstants.map(item => item.name);
@@ -1982,6 +2005,7 @@ Return JSON in this format:
 export const BorpClientInterface: Client = {
     start: async (runtime: IAgentRuntime) => {
         try {
+            
             const client = new BorpClient(runtime);
 
             // Start the task processing loop with error handling
@@ -2014,5 +2038,26 @@ process.on('SIGTERM', () => {
     aiKhwarizmiLogger.cleanup();
     process.exit(0);
 });
+// Add global error handlers
+/*process.on('uncaughtException', (error) => {
+    // Log the original error first
+    aiKhwarizmiLogger.error('Original Error:', {
+        error: error.message,
+        stack: error.stack,
+        type: error.name,
+        timestamp: new Date().toISOString()
+    });
 
+    // Use console.error as fallback if database logging fails
+    console.error('Original Error:', {
+        message: error.message,
+        stack: error.stack,
+        type: error.name,
+        timestamp: new Date().toISOString()
+    });
 
+    // Give the logger time to write before exiting
+    setTimeout(() => {
+        process.exit(1);
+    }, 1000);
+});*/

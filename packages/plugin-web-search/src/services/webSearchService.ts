@@ -10,10 +10,13 @@ export type TavilyClient = ReturnType<typeof tavily>; // declaring manually beca
 
 export class WebSearchService extends Service implements IWebSearchService {
     public tavilyClient: TavilyClient
+    serviceType: ServiceType = ServiceType.WEB_SEARCH;
+
 
     async initialize(_runtime: IAgentRuntime): Promise<void> {
         const apiKey = _runtime.getSetting("TAVILY_API_KEY") as string;
         if (!apiKey) {
+            console.error("TAVILY_API_KEY is not set");
             throw new Error("TAVILY_API_KEY is not set");
         }
         this.tavilyClient = tavily({ apiKey });
@@ -23,9 +26,7 @@ export class WebSearchService extends Service implements IWebSearchService {
         return WebSearchService.getInstance();
     }
 
-    static get serviceType(): ServiceType {
-        return ServiceType.WEB_SEARCH;
-    }
+ 
 
     async search(
         query: string,

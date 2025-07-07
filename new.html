@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Analysis with TensorFlow.js</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+</head>
+<body>
+  <h1>Select an Image for Analysis</h1>
+
+  <!-- Input for selecting an image file -->
+  <input type="file" id="imageInput" accept="image/*" />
+  
+  <br><br>
+  <!-- Image preview -->
+  <img id="image" style="max-width: 100%;" />
+
+  <script>
+    // Function to handle the selected image
+    document.getElementById('imageInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];  // Get the selected file
+      if (file) {
+        const reader = new FileReader();
+        
+        // Read the file and set it as the image source
+        reader.onload = function(e) {
+          const imgElement = document.getElementById('image');
+          imgElement.src = e.target.result;
+
+          imgElement.onload = () => {
+            // Make sure the image is fully loaded before running analysis
+            analyzeImage(imgElement);
+          };
+        };
+        
+        reader.readAsDataURL(file);  // Convert the file to a data URL
+      }
+    });
+
+    // Make sure analyzeImage is an async function
+    async function analyzeImage(imageElement) {
+      // Load the pre-trained object detection model
+      const model = await cocoSsd.load();
+
+      // Run the detection
+      const predictions = await model.detect(imageElement);
+
+      console.log("Predictions:", predictions);  // Log the predictions
+
+      if (predictions.length === 0) {
+        console.log("No objects detected in the image.");
+      } else {
+        predictions.forEach(prediction => {
+          console.log(`Detected ${prediction.class} with ${Math.round(prediction.score * 100)}% confidence.`);
+        });
+
+        // Draw bounding boxes for detected objects
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);  // Add the canvas to the page
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas dimensions based on the image size
+        canvas.width = imageElement.width;
+        canvas.height = imageElement.height;
+        ctx.drawImage(imageElement, 0, 0);
+
+        // Draw bounding boxes for detected objects
+        predictions.forEach(prediction => {
+          const [x, y, width, height] = prediction.bbox;
+          ctx.beginPath();
+          ctx.rect(x, y, width, height);
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = 'red';
+          ctx.fillStyle = 'red';
+          ctx.stroke();
+          ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, x, y > 10 ? y - 5 : 10);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

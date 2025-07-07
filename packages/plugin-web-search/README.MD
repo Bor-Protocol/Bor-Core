@@ -245,3 +245,11 @@ For more information about the search capabilities and tools:
 ## License
 
 This plugin is part of the aikhwarizmi project. See the main project repository for license information.
+
+## technical note:
+The answer is Tavily's AI processing of the search results to provide a direct response to your query, rather than just returning raw search results. It's particularly useful when you want a summarized or synthesized response from multiple search results.
+For example:
+Query: "What is the capital of France?"
+Answer might be: "The capital of France is Paris."
+Instead of just returning web pages about Paris, it gives you the direct answer extracted from the search results.
+https://www.npmjs.com/package/@tavily/core

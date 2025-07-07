@@ -229,7 +229,7 @@ export async function createAgent(
 async function startAgent(character: Character, directClient: any) {
     try {
         const token = getTokenForProvider(character.modelProvider, character);
-        const db = initializeDatabase();
+        const db = await initializeDatabase();
 
         const runtime = await createAgent(character, db, token);
 
