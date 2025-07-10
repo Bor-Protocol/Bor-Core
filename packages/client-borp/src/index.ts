@@ -137,8 +137,8 @@ export class BorpClient {
         currentTask: null,
         interruptedAt: null
     };
-
-    constructor(runtime: IAgentRuntime) {
+    //genereare task process
+    /*constructor(runtime: IAgentRuntime) {
         this.runtime = runtime;
         this.roomId = stringToUuid(`borp-stream-${this.runtime.agentId}`);
         this.lastProcessedTimestamp = new Date();
@@ -153,9 +153,93 @@ export class BorpClient {
             characterName: this.runtime.character.name,
             currentSubject: this.currentSubject
         });
+    }*/
+
+        private taskQueue: TaskPriority[] = [
+ 
+            {
+                name: 'readChatAndReply',
+                priority: 1,
+                minInterval: 1000 * 20
+            }
+        ];
+    
+        private taskInterval: NodeJS.Timeout;
+    constructor(runtime: IAgentRuntime) {
+        this.runtime = runtime;
+        this.roomId = stringToUuid(`borp-stream-${this.runtime.agentId}`);
+        this.lastProcessedTimestamp = new Date();
+
+        console.log("borp: constructor", {
+            runtime: this.runtime,
+            settings: this.runtime.character.settings,
+            vrm: this.runtime.character.settings?.secrets?.vrm,
+            avatar: this.runtime.character.settings?.secrets?.avatar,
+            lastProcessedTimestamp: this.lastProcessedTimestamp
+        });
+
+        // Start the task scheduler
+        this.taskInterval = setInterval(() => {
+            this.processNextTask();
+        }, 1000); // Check for new tasks every second
+    }
+    /**
+     * Processes the next available task in the task queue based on priority and timing
+     * Tasks are executed sequentially to avoid conflicts and maintain system stability
+     */
+    private async processNextTask() {
+        // Get current timestamp to check task eligibility
+        const now = Date.now();
+
+        // Find the highest priority task that:
+        // 1. Isn't currently running
+        // 2. Has waited long enough since its last run (minInterval)
+        const eligibleTask = this.taskQueue.find(task => {
+            const timeElapsed = now - (task.lastRun || 0);
+            return !task.isRunning && timeElapsed >= task.minInterval;
+            //return task;
+        });
+
+        // Exit if no tasks are eligible to run
+        if (!eligibleTask) return;
+
+        // Set task status to running to prevent concurrent execution
+        eligibleTask.isRunning = true;
+
+        try {
+            // Execute the appropriate task based on task name
+            // Each task handles a different aspect of the AI's behavior:
+            // - readChatAndReply: Monitor chat and generate responses
+            // - generateFreshThought: Create unprompted messages
+            // - generatePeriodicAnimation: Update AI's animation state
+            // - heartbeat: Maintain connection status
+            switch (eligibleTask.name) {
+             
+                case 'readChatAndReply':
+                    await this.readChatAndReply();
+                    break;
+
+                case 'generateFreshThought':
+                    await this.generateAndShareFreshThought();
+                    break;
+
+                case 'generatePeriodicAnimation':
+                    await this.generateAndSharePeriodicAnimation();
+                    break;
+
+            }
+        } catch (error) {
+            // Log any errors that occur during task execution
+            console.error(`Error executing task ${eligibleTask.name}:`, error);
+        } finally {
+            // Clean up task state regardless of success/failure:
+            // - Update the last run timestamp
+            // - Reset the running flag to allow future execution
+            eligibleTask.lastRun = Date.now();
+            eligibleTask.isRunning = false;
+        }
     }
 
-   
 
     private thoughtHistory: string[] = [];
     private maxThoughtHistory: number = 100; // Keep last 100 thoughts for context
@@ -254,7 +338,7 @@ export class BorpClient {
     public async startTaskProcessing() {
         try {
             const startTime = new Date();
-            await this.generateSearch("superman vs batman");
+           // await this.generateSearch("superman vs batman");
             if (this.mode === 'startStructuredStory') {
                 this.taskQueueConstants = [
 
@@ -284,6 +368,15 @@ export class BorpClient {
 
                     'generatePeriodicAnimation',
 
+
+
+                ];
+            }
+            else if (this.mode === 'Ultranormal') {
+                this.taskQueueConstants = [
+
+
+                    'readChatAndReply',
 
 
                 ];
@@ -350,7 +443,7 @@ export class BorpClient {
                             }),
                             remainingTasks: taskPlan.length
                         });
-
+                        console.log("abderrahmen 1")
                         switch (task) {
                             case 'readChatAndReply':
                                 await this.readChatAndReply();
@@ -618,6 +711,7 @@ export class BorpClient {
 
     async readChatAndReply() {
         try {
+            console.log("abderrahmen 2");
             // Read Comments since last processed timestamp
             aiKhwarizmiLogger.log(`[${new Date().toLocaleString()}] Borp (${this.runtime.character.name}): Reading chat since`,
                 this.lastProcessedTimestamp?.toISOString());
@@ -836,6 +930,7 @@ export class BorpClient {
             });
 
             const responseContent = await this._generateResponse(memory, state, context);
+            //here the other simulation
             responseContent.text = responseContent.text?.trim();
 
             const responseMessage = {
@@ -1030,7 +1125,8 @@ export class BorpClient {
              const publicUrl = response.data.url;
              aiKhwarizmiLogger.log(`borp (${agentName}): upload successful`, { publicUrl });
              return publicUrl;*/
-        return "https://borstorage.b-cdn.net/speech/1737312298831.mp3";
+        //return "https://borstorage.b-cdn.net/speech/1737312298831.mp3";
+        return "/audio/ttsMP3.com_VoiceText_2025-7-10_19-15-4.mp3";
         // } catch (error) {
         //  aiKhwarizmiLogger.error(`borp (${agentName}): error sending audio to server`, error);
         throw new Error("Failed to upload audio");
@@ -2000,8 +2096,7 @@ Return JSON in this format:
 }
 
 
-/************************ */
-//the start of the process
+/************************ the start of the process
 export const BorpClientInterface: Client = {
     start: async (runtime: IAgentRuntime) => {
         try {
@@ -2023,6 +2118,18 @@ export const BorpClientInterface: Client = {
     },
     stop: async (runtime: IAgentRuntime) => {
         aiKhwarizmiLogger.warn("Direct client does not support stopping yet");
+    },
+};*/
+
+/************************ */
+//the start of the process
+export const BorpClientInterface: Client = {
+    start: async (runtime: IAgentRuntime) => {
+        const client = new BorpClient(runtime);
+        return client;
+    },
+    stop: async (runtime: IAgentRuntime) => {
+        console.warn("Direct client does not support stopping yet");
     },
 };
 

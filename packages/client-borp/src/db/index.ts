@@ -33,6 +33,7 @@ export async function fetchStreamComments(
   limit: number = 15
 ) {
   try {
+     console.log("from here:");
     const url = SERVER_ENDPOINTS.GET.UNREAD_COMMENTS(agentId) + 
       `?since=${since.toISOString()}&` +
       `limit=${limit}`;
