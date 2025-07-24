@@ -9,12 +9,31 @@ import {
     type Relationship,
     type UUID,
     Participant,
-} from "@algo3b/aikhwarizmi/src/utils/types.ts";
-import { DatabaseAdapter } from "@algo3b/aikhwarizmi/src/utils/database.ts";
+} from "@algo3b/aikhwarizmi";
+import { DatabaseAdapter } from "@algo3b/aikhwarizmi";
 const { Pool } = pg;
 
+// Extended Account interface for authentication features
+interface ExtendedAccount extends Account {
+    password?: string;
+    is_agent?: boolean;
+    points?: number;
+    user_type?: string;
+    subscription_tier?: string;
+    is_active?: boolean;
+    email_verified?: boolean;
+    total_sessions?: number;
+    points_last_regen?: string;
+    points_next_regen?: string;
+    timezone?: string;
+    preferences?: any;
+    created_at?: string;
+    updated_at?: string;
+    last_login?: string;
+}
+
 export class PostgresDatabaseAdapter extends DatabaseAdapter {
-    private pool: typeof Pool;
+    private pool: pg.Pool;
 
     constructor(connectionConfig: any) {
         super();
@@ -176,21 +195,155 @@ export class PostgresDatabaseAdapter extends DatabaseAdapter {
     async createAccount(account: Account): Promise<boolean> {
         const client = await this.pool.connect();
         try {
+            const extendedAccount = account as ExtendedAccount;
+            
+            // Core account fields only for basic Protocol functionality
+            const query = `
+                INSERT INTO accounts (
+                    id, name, username, email, "avatarUrl", details
+                )
+                VALUES ($1, $2, $3, $4, $5, $6)
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    username = EXCLUDED.username,
+                    email = EXCLUDED.email,
+                    "avatarUrl" = EXCLUDED."avatarUrl",
+                    details = EXCLUDED.details
+            `;
+            
+            await client.query(query, [
+                account.id ?? v4(),
+                account.name,
+                account.username || "",
+                account.email || "",
+                account.avatarUrl || "",
+                JSON.stringify(account.details || {})
+            ]);
+            return true;
+        } catch (error) {
+            console.log("Error creating account", error);
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+
+    // New method for creating extended accounts with auth features
+    async createExtendedAccount(account: ExtendedAccount): Promise<boolean> {
+        const client = await this.pool.connect();
+        try {
+            const query = `
+                INSERT INTO accounts (
+                    id, name, username, email, "avatarUrl", details,
+                    password, is_agent, points, user_type, subscription_tier, 
+                    is_active, email_verified, total_sessions, points_last_regen, 
+                    points_next_regen, timezone, preferences, created_at, updated_at
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    username = EXCLUDED.username,
+                    email = EXCLUDED.email,
+                    "avatarUrl" = EXCLUDED."avatarUrl",
+                    details = EXCLUDED.details,
+                    password = EXCLUDED.password,
+                    points = EXCLUDED.points,
+                    updated_at = EXCLUDED.updated_at
+            `;
+            
+            await client.query(query, [
+                account.id ?? v4(),
+                account.name,
+                account.username || "",
+                account.email || "",
+                account.avatarUrl || "",
+                JSON.stringify(account.details || {}),
+                account.password || "",
+                account.is_agent || false,
+                account.points || 100,
+                account.user_type || "user",
+                account.subscription_tier || "free",
+                account.is_active !== undefined ? account.is_active : true,
+                account.email_verified || false,
+                account.total_sessions || 0,
+                account.points_last_regen || new Date().toISOString(),
+                account.points_next_regen || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                account.timezone || "UTC",
+                JSON.stringify(account.preferences || {}),
+                account.created_at || new Date().toISOString(),
+                account.updated_at || new Date().toISOString()
+            ]);
+            return true;
+        } catch (error) {
+            console.log("Error creating extended account", error);
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+
+    async updateAccount(userId: UUID, updates: Partial<ExtendedAccount>): Promise<boolean> {
+        const client = await this.pool.connect();
+        try {
+            const updateFields = [];
+            const values = [];
+            let paramCount = 1;
+
+            // Build dynamic update query
+            for (const [key, value] of Object.entries(updates)) {
+                if (value !== undefined) {
+                    updateFields.push(`"${key}" = $${paramCount}`);
+                    values.push(value);
+                    paramCount++;
+                }
+            }
+
+            if (updateFields.length === 0) {
+                return false;
+            }
+
+            const query = `UPDATE accounts SET ${updateFields.join(', ')} WHERE id = $${paramCount}`;
+            values.push(userId);
+
+            await client.query(query, values);
+            return true;
+        } catch (error) {
+            console.log("Error updating account", error);
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+
+    async createPointsTransaction(transaction: any): Promise<boolean> {
+        const client = await this.pool.connect();
+        try {
             await client.query(
-                `INSERT INTO accounts (id, name, username, email, "avatarUrl", details)
-                VALUES ($1, $2, $3, $4, $5, $6)`,
+                `INSERT INTO points_transactions (
+                    id, user_id, transaction_type, points_amount, reason, 
+                    description, reference_type, reference_id, balance_before, 
+                    balance_after, admin_id, admin_note, created_at
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    account.id ?? v4(),
-                    account.name,
-                    account.username || "",
-                    account.email || "",
-                    account.avatarUrl || "",
-                    JSON.stringify(account.details),
+                    transaction.id ?? v4(),
+                    transaction.user_id,
+                    transaction.transaction_type,
+                    transaction.points_amount,
+                    transaction.reason,
+                    transaction.description || "",
+                    transaction.reference_type || null,
+                    transaction.reference_id || null,
+                    transaction.balance_before,
+                    transaction.balance_after,
+                    transaction.admin_id || null,
+                    transaction.admin_note || "",
+                    transaction.created_at || new Date().toISOString()
                 ]
             );
             return true;
         } catch (error) {
-            console.log("Error creating account", error);
+            console.log("Error creating points transaction", error);
             return false;
         } finally {
             client.release();
