@@ -32,6 +32,42 @@ import { ConfigReader } from './utils/configReader.ts';
 
 const api_key = process.env.BORP_API_KEY;
 
+// Global agent registry
+const agentRegistry: Map<string, BorpClient> = new Map();
+
+// Rate limiting for API calls
+class RateLimiter {
+    private requests: number[] = [];
+    private maxRequests: number;
+    private timeWindow: number;
+
+    constructor(maxRequests: number = 10, timeWindowMs: number = 60000) {
+        this.maxRequests = maxRequests;
+        this.timeWindow = timeWindowMs;
+    }
+
+    async waitIfNeeded(): Promise<void> {
+        const now = Date.now();
+        // Remove old requests outside time window
+        this.requests = this.requests.filter(time => now - time < this.timeWindow);
+        
+        if (this.requests.length >= this.maxRequests) {
+            const oldestRequest = this.requests[0];
+            const waitTime = this.timeWindow - (now - oldestRequest);
+            if (waitTime > 0) {
+                aiKhwarizmiLogger.log(`Rate limit reached, waiting ${waitTime}ms`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+            }
+        }
+        
+        this.requests.push(now);
+    }
+}
+
+// Global rate limiters
+const commentsFetchLimiter = new RateLimiter(30, 60000); // 30 requests per minute
+const aiGenerationLimiter = new RateLimiter(20, 60000);  // 20 AI calls per minute
+
 
 
 export class BorpClient {
@@ -48,6 +84,7 @@ export class BorpClient {
 
     private lastProcessedTimestamp: Date | undefined;
     private lastAgentChatMessageId: string | null = null;
+    memoryCleanupInterval: NodeJS.Timeout;
 
 
 
@@ -82,6 +119,11 @@ export class BorpClient {
         this.taskInterval = setInterval(() => {
             this.processNextTask();
         }, 1000); // Check for new tasks every second
+
+        // Start memory cleanup (every 10 minutes)
+        this.memoryCleanupInterval = setInterval(() => {
+            this.cleanupOldMemories();
+        }, 1000 * 60 * 10);
     }
     /**
      * Processes the next available task in the task queue based on priority and timing
@@ -169,11 +211,14 @@ export class BorpClient {
 
     async readChatAndReply() {
         try {
-            console.log("abderrahmen 2");
+            console.log("abderrahmen 2 : "+this.runtime.agentId);
             // Read Comments since last processed timestamp
             aiKhwarizmiLogger.log(`[${new Date().toLocaleString()}] Borp (${this.runtime.character.name}): Reading chat since`,
                 this.lastProcessedTimestamp?.toISOString());
 
+            // Apply rate limiting before fetching comments
+            await commentsFetchLimiter.waitIfNeeded();
+            
             const { comments } = await fetchUnreadComments(
                 this.runtime.agentId,
                 this.lastProcessedTimestamp
@@ -195,6 +240,23 @@ export class BorpClient {
             aiKhwarizmiLogger.error("Error in readChatAndReply:", error);
         }
     }
+
+    // Memory cleanup to prevent memory leaks
+    private async cleanupOldMemories() {
+        try {
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            
+            // This would require adding a cleanup method to the database adapter
+            // For now, just log the cleanup attempt
+            aiKhwarizmiLogger.log(`${this.runtime.character.name}: Cleaning up memories older than ${oneDayAgo.toISOString()}`);
+            
+            // Actual cleanup would be implemented in the database adapter:
+            // await this.runtime.databaseAdapter.cleanupOldMemories(this.roomId, oneDayAgo);
+        } catch (error) {
+            aiKhwarizmiLogger.error("Error during memory cleanup:", error);
+        }
+    }
+
 
     async processComments(comments: IComment[]) {
         aiKhwarizmiLogger.log(comments);
@@ -861,14 +923,36 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
 export const BorpClientInterface: Client = {
     start: async (runtime: IAgentRuntime) => {
         const client = new BorpClient(runtime);
+        // Register in global registry
+        agentRegistry.set(runtime.agentId.toString(), client);
         return client;
     },
     stop: async (runtime: IAgentRuntime) => {
-        console.warn("Direct client does not support stopping yet");
+        const agentId = runtime.agentId.toString();
+        const client = agentRegistry.get(agentId);
+        if (client) {
+            // Clean up intervals
+            if (client.interval) clearInterval(client.interval);
+            if (client.intervalTopLikers) clearInterval(client.intervalTopLikers);
+            if (client.intervalTotalLikes) clearInterval(client.intervalTotalLikes);
+            if (client.memoryCleanupInterval) clearInterval(client.memoryCleanupInterval);
+            // Remove from registry
+            agentRegistry.delete(agentId);
+            console.log(`Stopped agent ${agentId}`);
+        }
     },
 };
 
 export default BorpClientInterface;
+
+// Utility functions to work with multiple agents
+export function getAgent(agentId: string): BorpClient | undefined {
+    return agentRegistry.get(agentId);
+}
+
+export function getAllAgents(): Map<string, BorpClient> {
+    return agentRegistry;
+}
 
 // Add to your shutdown handling
 process.on('SIGINT', () => {

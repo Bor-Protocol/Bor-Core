@@ -8,6 +8,7 @@
         "start:service:all": "pnpm --filter \"@algo3b/agent\" start:service:all --isRoot",
         "stop:service:all": "pnpm --filter \"@algo3b/agent\" stop:service:all",
         "start": "pnpm --filter \"@algo3b/agent\" start --isRoot",
+        "start:multi": "pnpm --filter \"@algo3b/agent\" start:multi --isRoot",
         "dev": "bash ./scripts/dev.sh",
         "lint": "pnpm --dir packages/core lint && pnpm --dir packages/agent lint",
         "prettier-check": "npx prettier --check .",
