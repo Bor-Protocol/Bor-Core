@@ -315,7 +315,7 @@ export class BorpClient {
             return comments;
         }
 
-        const userIdUUID = stringToUuid(selectedComment.handle);
+        const userIdUUID = stringToUuid(selectedComment.user);
 
         // Add this new section to create first interaction memory
         try {
@@ -341,17 +341,17 @@ export class BorpClient {
             if (selectedComment.message !== undefined && (existingMemories === undefined || existingMemories.length === 0)) {
                 // This is the first interaction - create a special memory
                 const firstInteractionMemory: Memory = {
-                    id: stringToUuid(`first-interaction-${selectedComment.handle}-${this.runtime.agentId}`),
+                    id: stringToUuid(`first-interaction-${selectedComment.user}-${this.runtime.agentId}`),
                     userId: userIdUUID,
                     agentId: this.runtime.agentId,
                     roomId: this.roomId,
                     unique: true,
                     content: {
-                        text: `My name is ${selectedComment.handle}`,
+                        text: `I am user ${selectedComment.user}${selectedComment.handle ? ` (${selectedComment.handle})` : ''}`,
                         source: "borp",
                         metadata: {
                             isFirstInteraction: true,
-                            username: selectedComment.handle,
+                            userEmail: selectedComment.user,
                             handle: selectedComment.handle,
                             timestamp: new Date().toISOString()
                         }
@@ -363,6 +363,7 @@ export class BorpClient {
                 try {
                     await this.runtime.messageManager.createMemory(firstInteractionMemory);
                     aiKhwarizmiLogger.log("Successfully created first interaction memory:", {
+                        user: selectedComment.user,
                         handle: selectedComment.handle,
                         memoryId: firstInteractionMemory.id
                     });
@@ -391,8 +392,8 @@ export class BorpClient {
         await this.runtime.ensureConnection(
             userIdUUID,
             this.roomId,
-            selectedComment.handle,
-            selectedComment.handle,
+            selectedComment.user,
+            selectedComment.handle || selectedComment.user,
             "borp"
         );
 
