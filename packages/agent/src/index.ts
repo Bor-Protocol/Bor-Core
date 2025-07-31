@@ -171,11 +171,19 @@ export async function createDirectRuntime(
 }
 
 function initializeDatabase() {
-    if (process.env.POSTGRES_URL) {
+    // Check for PostgreSQL connection (supports both Supabase and Vercel Postgres)
+    if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+        const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+        console.log('🐘 Using PostgreSQL database'+process.env.DATABASE_URL);
+        
         return new PostgresDatabaseAdapter({
-            connectionString: process.env.POSTGRES_URL,
+            connectionString: connectionString!,
+            ssl: process.env.NODE_ENV === 'production' ? {
+                rejectUnauthorized: false
+            } : false
         });
     } else {
+        console.log('🗃️ Using SQLite database (development)');
         return new SqliteDatabaseAdapter(new Database("./db.sqlite"));
     }
 }

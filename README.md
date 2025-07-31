@@ -104,7 +104,7 @@ pnpm build
 pnpm start
 ```
 
-
+cp "exempl .env" .env
 ## 🏗️ Project Structure
 
 ```
