@@ -1,4 +1,4 @@
-import { EmbeddingModel, FlagEmbedding } from "fastembed";
+// import { EmbeddingModel, FlagEmbedding } from "fastembed";
 import path from "path";
 import { fileURLToPath } from "url";
 import models from "./models.ts";
@@ -131,19 +131,28 @@ export async function embed(runtime: IAgentRuntime, input: string) {
 
 
 async function getLocalEmbedding(input: string): Promise<number[]> {
-    const cacheDir = getRootPath() + "/cache/";
-    if (!fs.existsSync(cacheDir)) {
-        fs.mkdirSync(cacheDir, { recursive: true });
+    try {
+        // Dynamic import only when needed
+        // @ts-ignore - fastembed is optional dependency
+        const { FlagEmbedding } = await import("fastembed");
+        
+        const cacheDir = getRootPath() + "/cache/";
+        if (!fs.existsSync(cacheDir)) {
+            fs.mkdirSync(cacheDir, { recursive: true });
+        }
+
+        const embeddingModel = await FlagEmbedding.init({
+            cacheDir: cacheDir
+        });
+
+        const trimmedInput = trimTokens(input, 8000, "gpt-4o-mini");
+        const embedding = await embeddingModel.queryEmbed(trimmedInput);
+        //console.log("Embedding dimensions: ", embedding.length);
+        return embedding;
+    } catch (error) {
+        console.warn("fastembed not available, falling back to remote embedding");
+        throw new Error("Local embedding not available - fastembed package not installed");
     }
-
-    const embeddingModel = await FlagEmbedding.init({
-        cacheDir: cacheDir
-    });
-
-    const trimmedInput = trimTokens(input, 8000, "gpt-4o-mini");
-    const embedding = await embeddingModel.queryEmbed(trimmedInput);
-    //console.log("Embedding dimensions: ", embedding.length);
-    return embedding;
 }
 
 export async function retrieveCachedEmbedding(
