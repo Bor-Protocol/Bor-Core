@@ -60,7 +60,7 @@ export class BorpClient {
             {
                 name: 'readChatAndReply',
                 priority: 1,
-                minInterval: 1000 * 20
+                minInterval: 1000 * 1
             }
         ];
     

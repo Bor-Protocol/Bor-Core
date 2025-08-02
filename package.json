@@ -1,19 +1,13 @@
 {
     "name": "ai-khwarizmi",
     "scripts": {
-        "preinstall": "npx only-allow pnpm",
-        "build": "node build.js && bash ./scripts/build.sh",
-        "build:vercel": "node build.js",
-        "build-docs": "pnpm --dir docs build",  
-        "start:all": "pnpm --filter \"@algo3b/agent\" start:all --isRoot",
-        "start:service:all": "pnpm --filter \"@algo3b/agent\" start:service:all --isRoot",
-        "stop:service:all": "pnpm --filter \"@algo3b/agent\" stop:service:all",
-        "start": "pnpm --filter \"@algo3b/agent\" start --isRoot",
-        "dev": "bash ./scripts/dev.sh",
-        "lint": "pnpm --dir packages/core lint && pnpm --dir packages/agent lint",
+        "build": "cd packages/core && npx tsup --format esm --dts && cd ../agent && npx tsup src/index.ts --format esm --dts",
+        "start": "cd packages/agent && npm start",
+        "dev": "cd packages/agent && npm run dev",
+        "lint": "cd packages/core && npm run lint && cd ../agent && npm run lint",
         "prettier-check": "npx prettier --check .",
         "prettier": "npx prettier --write .",
-        "clean": "bash ./scripts/clean.sh"
+        "postinstall": "cd packages/core && npm install && cd ../agent && npm install"
     },
     "devDependencies": {
         "concurrently": "^9.1.0",
