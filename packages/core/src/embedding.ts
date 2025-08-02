@@ -107,7 +107,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
         runtime.character.modelProvider !== ModelProviderName.OLLAMA &&
         !settings.USE_OPENAI_EMBEDDING
     ) {
-        return await getLocalEmbedding(input);
+       // return await getLocalEmbedding(input);
     }
 
     // Check cache
@@ -130,7 +130,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
 }
 
 
-async function getLocalEmbedding(input: string): Promise<number[]> {
+/*async function getLocalEmbedding(input: string): Promise<number[]> {
     try {
         // Dynamic import only when needed
         // @ts-ignore - fastembed is optional dependency
@@ -153,7 +153,7 @@ async function getLocalEmbedding(input: string): Promise<number[]> {
         console.warn("fastembed not available, falling back to remote embedding");
         throw new Error("Local embedding not available - fastembed package not installed");
     }
-}
+}*/
 
 export async function retrieveCachedEmbedding(
     runtime: IAgentRuntime,
