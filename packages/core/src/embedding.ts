@@ -123,7 +123,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
             'https://api.openai.com/v1' : // Always use OpenAI endpoint when USE_OPENAI_EMBEDDING is true
             (runtime.character.modelEndpointOverride || modelProvider.endpoint),
         apiKey: settings.USE_OPENAI_EMBEDDING ?
-            settings.OPENAI_API_KEY : // Use OpenAI key from settings when USE_OPENAI_EMBEDDING is true
+            (process.env.OPENAI_API_KEY || settings.OPENAI_API_KEY) : // Use OpenAI key from env or settings when USE_OPENAI_EMBEDDING is true
             runtime.token,            // Use runtime token for other providers
         isOllama: runtime.character.modelProvider === ModelProviderName.OLLAMA && !settings.USE_OPENAI_EMBEDDING
     });

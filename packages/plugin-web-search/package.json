@@ -13,7 +13,7 @@
         "start:all": "node --loader ts-node/esm src/index.ts --characters=\"../characters/eliza.json\",\"../characters/degenspartan.json\",\"../characters/ruby.json\",\"../characters/pmairca.json\""
     },
     "dependencies": {
-        "@algo3b/aikhwarizmi": "workspace:*",
+        "@algo3b/aikhwarizmi": "file:../core",
         "@tavily/core": "^0.0.2",
         "tsup": "8.3.5",
         "js-tiktoken": "1.0.15"

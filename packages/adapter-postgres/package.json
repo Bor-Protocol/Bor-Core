@@ -5,7 +5,7 @@
     "type": "module",
     "types": "dist/index.d.ts",
     "dependencies": {
-        "@algo3b/aikhwarizmi": "workspace:*",
+        "@algo3b/aikhwarizmi": "file:../core",
         "pg": "^8.13.1"
     },
     "devDependencies": {

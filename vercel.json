@@ -12,8 +12,8 @@
       "dest": "/packages/agent/src/server.ts"
     }
   ],
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "functions": {
     "packages/agent/src/server.ts": {
       "maxDuration": 60

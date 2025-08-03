@@ -31,12 +31,16 @@ export function findNearestEnvFile(startDir = process.cwd()) {
 /**
  * Loads environment variables from the nearest .env file
  * @returns {Object} Environment variables object
- * @throws {Error} If no .env file is found
  */
 export function loadEnvConfig() {
     const envPath = findNearestEnvFile();
 
     if (!envPath) {
+        // In production, environment variables should be set directly
+        if (process.env.NODE_ENV === 'production') {
+            console.log("No .env file found. Using environment variables from system.");
+            return process.env;
+        }
         throw new Error("No .env file found in current or parent directories.");
     }
 

@@ -2,16 +2,16 @@ import { PostgresDatabaseAdapter } from "@algo3b/adapter-postgres/src/index.ts";
 import { SqliteDatabaseAdapter } from "@algo3b/adapter-sqlite/src/index.ts";
 import { DirectClientInterface } from "@algo3b/client-direct/src/index.ts";
 import { BorpClientInterface } from "@algo3b/client-borp/src/index.ts";
-import { defaultCharacter } from "@algo3b/aikhwarizmi/src/defaultCharacter.ts";
-import { AgentRuntime } from "@algo3b/aikhwarizmi/src/runtime.ts";
-import settings from "@algo3b/aikhwarizmi/src/utils/settings.ts";
-import {
+import { 
+    defaultCharacter,
+    AgentRuntime,
+    settings,
     Character,
     IAgentRuntime,
     IDatabaseAdapter,
     ModelProviderName,
-} from "@algo3b/aikhwarizmi/src/utils/types.ts";
-import { nodePlugin } from "@algo3b/plugin-node/src/index.ts";
+} from "@algo3b/aikhwarizmi/dist/index.js";
+// import { nodePlugin } from "@algo3b/plugin-node/src/index.ts"; // Disabled for Railway deployment
 import { webSearchPlugin } from "@algo3b/plugin-web-search/src/index.ts";
 import Database from "better-sqlite3";
 import fs from "fs";
@@ -112,6 +112,7 @@ export function getTokenForProvider(
         case ModelProviderName.OPENAI:
             return (
                 character.settings?.secrets?.OPENAI_API_KEY ||
+                process.env.OPENAI_API_KEY ||
                 settings.OPENAI_API_KEY
             );
         case ModelProviderName.LLAMACLOUD:
@@ -172,12 +173,25 @@ export async function createDirectRuntime(
 
 function initializeDatabase() {
     // Check for PostgreSQL connection (supports both Supabase and Vercel Postgres)
-    if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
-        const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-        console.log('🐘 Using PostgreSQL database'+process.env.DATABASE_URL);
+    const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+    
+    console.log('Environment check:', {
+        NODE_ENV: process.env.NODE_ENV,
+        DATABASE_URL_EXISTS: !!process.env.DATABASE_URL,
+        POSTGRES_URL_EXISTS: !!process.env.POSTGRES_URL,
+        OPENAI_API_KEY_EXISTS: !!process.env.OPENAI_API_KEY,
+        ALL_ENV_KEYS: Object.keys(process.env).filter(key => 
+            key.includes('DATABASE') || 
+            key.includes('POSTGRES') || 
+            key.includes('OPENAI')
+        )
+    });
+    
+    if (databaseUrl) {
+        console.log('🐘 Using PostgreSQL database');
         
         return new PostgresDatabaseAdapter({
-            connectionString: connectionString!,
+            connectionString: databaseUrl,
             ssl: process.env.NODE_ENV === 'production' ? {
                 rejectUnauthorized: false
             } : false
@@ -222,7 +236,7 @@ export async function createAgent(
         evaluators: [],
         character,
         plugins: [
-            nodePlugin,
+            // nodePlugin, // Disabled for Railway deployment
             webSearchPlugin,
         
                 null
@@ -236,7 +250,18 @@ export async function createAgent(
 
 async function startAgent(character: Character, directClient: any) {
     try {
+        // Debug Railway environment
+        console.log("Railway environment check:");
+        console.log("RAILWAY_ENVIRONMENT:", process.env.RAILWAY_ENVIRONMENT);
+        console.log("Total env vars count:", Object.keys(process.env).length);
+        console.log("All env var names:", Object.keys(process.env).sort());
+        
         const token = getTokenForProvider(character.modelProvider, character);
+        console.log("Token retrieval:", {
+            provider: character.modelProvider,
+            token_exists: !!token,
+            token_length: token?.length || 0
+        });
         const db = await initializeDatabase();
 
         const runtime = await createAgent(character, db, token);

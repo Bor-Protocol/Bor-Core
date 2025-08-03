@@ -313,6 +313,12 @@ export class AgentRuntime implements IAgentRuntime {
      * @param knowledge An array of knowledge items containing id, path, and content.
      */
     private async processCharacterKnowledge(knowledge: string[]) {
+        // Skip knowledge processing if no API key
+        if (!this.token && !process.env.OPENAI_API_KEY) {
+            console.log("Skipping knowledge processing - no API key available");
+            return;
+        }
+        
         // ensure the room exists and the agent exists in the room
         this.ensureRoomExists(this.agentId);
         this.ensureUserExists(

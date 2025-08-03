@@ -1,8 +1,10 @@
 {
     "name": "ai-khwarizmi",
     "scripts": {
-        "build": "cd packages/core && npx tsup --format esm --dts && cd ../agent && npx tsup src/index.ts --format esm --dts",
+        "build": "cd packages/core && npx tsup --format esm --dts",
         "start": "cd packages/agent && npm start",
+        "start:railway": "cross-env TS_NODE_TRANSPILE_ONLY=true node --loader ts-node/esm packages/agent/src/index.ts",
+        "test:env": "node test-env.js",
         "dev": "cd packages/agent && npm run dev",
         "lint": "cd packages/core && npm run lint && cd ../agent && npm run lint",
         "prettier-check": "npx prettier --check .",
@@ -18,17 +20,15 @@
         "typedoc": "^0.26.11",
         "typescript": "5.6.3"
     },
-    "pnpm": {
-        "overrides": {
-            "onnxruntime-node": "^1.20.0"
-        }
-    },
     "engines": {
         "node": ">=22"
     },
     "dependencies": {
         "ollama-ai-provider": "^0.16.1",
         "optional": "^0.1.4",
-        "sharp": "^0.33.5"
+        "sharp": "^0.33.5",
+        "ts-node": "10.9.2",
+        "typescript": "5.6.3",
+        "cross-env": "^7.0.3"
     }
 }

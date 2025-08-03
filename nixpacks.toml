@@ -1,0 +1,25 @@
+[build]
+cmd = "npm run build"
+
+[start]
+cmd = "npm run start:railway"
+
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "npm-9_x"]
+
+[variables]
+NODE_ENV = "production"
+NPM_CONFIG_PRODUCTION = "false"
+
+[phases.install]
+cmds = [
+    "npm install --include=dev",
+    "cd packages/core && npm install",
+    "cd packages/agent && npm install",
+    "cd packages/adapter-postgres && npm install",
+    "cd packages/adapter-sqlite && npm install",
+    "cd packages/client-direct && npm install",
+    "cd packages/client-borp && npm install",
+    "cd packages/plugin-web-search && npm install",
+    "npm run build"
+]

@@ -5,7 +5,7 @@
     "type": "module",
     "types": "dist/index.d.ts",
     "dependencies": {
-        "@algo3b/aikhwarizmi": "workspace:*",
+        "@algo3b/aikhwarizmi": "file:../core",
         "@types/better-sqlite3": "7.6.11",
         "sqlite-vec": "0.1.4-alpha.2",
         "better-sqlite3": "11.5.0"
