@@ -210,11 +210,11 @@ export class BorpClient {
         aiKhwarizmiLogger.error(`abdos ` + JSON.stringify(commentIds));
 
         // Mark all comments as read
-       /* try {
+       try {
             await markCommentsAsRead(commentIds);
         } catch (error) {
             aiKhwarizmiLogger.error("borp: Failed to mark comments as read", { error });
-        }*/
+        }
 
         // Create memories for all comments
         let memoriesCreated = 0;
@@ -366,7 +366,7 @@ export class BorpClient {
 
         if (content.text) {
             await this.runtime.messageManager.createMemory(memory);
-            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: memory created`, { memory });
+           // aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: memory created`, { memory });
         }
 
         // Compose state and check if should respond
@@ -402,7 +402,7 @@ export class BorpClient {
             };
 
             await this.runtime.messageManager.createMemory(responseMessage);
-            aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: reply memory created`, { responseMessage });
+          //  aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: reply memory created`, { responseMessage });
 
 
 
