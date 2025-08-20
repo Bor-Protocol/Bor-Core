@@ -1,5 +1,6 @@
 import { IAgentRuntime } from '@algo3b/aikhwarizmi/src/utils/types.ts';
 import { SERVER_URL, SERVER_ENDPOINTS } from '../constants.ts';
+import { aiKhwarizmiLogger } from '@algo3b/aikhwarizmi';
 
 export interface IComment {
   id: string;
@@ -70,6 +71,13 @@ export async function fetchUnreadComments(
       }
 
       const data = await response.json();
+      const { comments } = data;
+      const commentIds = comments?.map(comment => comment.id) ?? [];
+      const commentMSG = comments?.map(comment => comment.message) ?? [];
+
+      aiKhwarizmiLogger.error(`abdos commentIds` + JSON.stringify(commentIds));
+      aiKhwarizmiLogger.error(`abdos commentMSG` + JSON.stringify(commentMSG));
+
       return data;
   } catch (error) {
       console.error("Error fetching unread comments:", error);

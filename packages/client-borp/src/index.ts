@@ -197,6 +197,8 @@ export class BorpClient {
     }
 
     async processComments(comments: IComment[]) {
+        aiKhwarizmiLogger.error(`abdos ` + JSON.stringify(comments));
+
         aiKhwarizmiLogger.log(comments);
         const commentIds = comments?.map(comment => comment.id) ?? [];
 
@@ -205,12 +207,14 @@ export class BorpClient {
             return commentIds;
         }
 
+        aiKhwarizmiLogger.error(`abdos ` + JSON.stringify(commentIds));
+
         // Mark all comments as read
-        try {
+       /* try {
             await markCommentsAsRead(commentIds);
         } catch (error) {
             aiKhwarizmiLogger.error("borp: Failed to mark comments as read", { error });
-        }
+        }*/
 
         // Create memories for all comments
         let memoriesCreated = 0;
@@ -683,6 +687,7 @@ export class BorpClient {
     static ROOM_ID = "borp-room";
 
     async readAgentChatAndReply() {
+
         if (!this.runtime.character.settings?.secrets?.isInChat) return;
 
         const roomId = stringToUuid(BorpClient.ROOM_ID);
