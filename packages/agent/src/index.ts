@@ -2,6 +2,8 @@ import { PostgresDatabaseAdapter } from "@algo3b/adapter-postgres/src/index.ts";
 import { SqliteDatabaseAdapter } from "@algo3b/adapter-sqlite/src/index.ts";
 import { DirectClientInterface } from "@algo3b/client-direct/src/index.ts";
 import { BorpClientInterface } from "@algo3b/client-borp/src/index.ts";
+import { nodePlugin } from "@algo3b/plugin-node/src/index.ts";
+
 import { 
     defaultCharacter,
     AgentRuntime,
@@ -12,7 +14,7 @@ import {
     ModelProviderName,
 } from "@algo3b/aikhwarizmi/dist/index.js";
 // import { nodePlugin } from "@algo3b/plugin-node/src/index.ts"; // Disabled for Railway deployment
-import { webSearchPlugin } from "@algo3b/plugin-web-search/src/index.ts";
+//import { webSearchPlugin } from "@algo3b/plugin-web-search/src/index.ts";
 import Database from "better-sqlite3";
 import fs from "fs";
 
@@ -236,8 +238,8 @@ export async function createAgent(
         evaluators: [],
         character,
         plugins: [
-            // nodePlugin, // Disabled for Railway deployment
-            webSearchPlugin,
+             nodePlugin, // Disabled for Railway deployment
+            //webSearchPlugin,
         
                 null
         ].filter(Boolean),

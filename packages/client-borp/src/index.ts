@@ -548,8 +548,8 @@ export class BorpClient {
         return response;
     }
     async generateSpeech(text: string): Promise<string> {
-        // aiKhwarizmiLogger.log("borp: generateSpeech", { text });
-        /* const agentName = this.runtime.character.name;
+         aiKhwarizmiLogger.log("borp: generateSpeech", { text });
+         const agentName = this.runtime.character.name;
          aiKhwarizmiLogger.log(`borp (${agentName}): starting speech generation for text:`, { text });
      
          // Get speech service and generate audio
@@ -582,13 +582,13 @@ export class BorpClient {
      
              const publicUrl = response.data.url;
              aiKhwarizmiLogger.log(`borp (${agentName}): upload successful`, { publicUrl });
-             return publicUrl;*/
+             return publicUrl;
         //return "https://borstorage.b-cdn.net/speech/1737312298831.mp3";
-        return "/audio/ttsMP3.com_VoiceText_2025-7-10_19-15-4.mp3";
-        // } catch (error) {
-        //  aiKhwarizmiLogger.error(`borp (${agentName}): error sending audio to server`, error);
+       //return "/audio/ttsMP3.com_VoiceText_2025-7-10_19-15-4.mp3";
+        } catch (error) {
+         aiKhwarizmiLogger.error(`borp (${agentName}): error sending audio to server`, error);
         throw new Error("Failed to upload audio");
-        // }
+        }
     }
 
 
