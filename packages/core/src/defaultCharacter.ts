@@ -7,7 +7,7 @@ export const defaultCharacter: Character = {
     modelProvider: ModelProviderName.OPENAI,
     settings: {
         secrets: {},
-        model:"gpt-4o-mini",
+        model:"gpt-4.1-mini-2025-04-14",
         voice: {
             model: "en_US-hfc_female-medium", // High-pitched angelic voice
         },
