@@ -13,9 +13,9 @@ const models: Models = {
             temperature: 0.6,
         },
         model: {
-            [ModelClass.SMALL]: "gpt-4o-mini",
-            [ModelClass.MEDIUM]: "gpt-4o",
-            [ModelClass.LARGE]: "gpt-4o",
+            [ModelClass.SMALL]: "gpt-4.1-nano-2025-04-14",
+            [ModelClass.MEDIUM]: "gpt-4.1-mini-2025-04-14",
+            [ModelClass.LARGE]: "gpt-4.1-2025-04-14",
             [ModelClass.EMBEDDING]: "text-embedding-3-small",
             [ModelClass.IMAGE]: "dall-e-3",
         },
