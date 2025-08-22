@@ -165,3 +165,7 @@ MIT
 ## 🔗 Related Projects
 
 - Bor Protocol Platform
+
+
+
+to build the code after changing : npm run build:all

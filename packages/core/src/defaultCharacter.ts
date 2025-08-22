@@ -1,7 +1,7 @@
 import { Character, Clients, ModelClass, ModelProviderName } from "./utils/types.ts";
 
 export const defaultCharacter: Character = {
-    name: "HIKARI",
+    name: "Trump",
     plugins: [],
     clients: [Clients.borp],
     modelProvider: ModelProviderName.OPENAI,
