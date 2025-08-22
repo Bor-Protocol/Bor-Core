@@ -8,7 +8,7 @@ export interface IComment {
   user: string;
   message: string;
   createdAt: Date;
-  readByAgent: boolean;
+  readByAgent: number;
   avatar?: string;
   handle?: string;
 }
