@@ -48,6 +48,35 @@ export class BorpClient {
 
     private lastProcessedTimestamp: Date | undefined;
     private lastAgentChatMessageId: string | null = null;
+    
+    // Fallback responses for when AI fails
+    private fallbackResponses = [
+        "Hey! Thanks for the comment!",
+        "That's interesting!",
+        "I appreciate you being here!",
+        "Cool! What do you think about that?",
+        "Thanks for watching the stream!",
+        "That's a good point!",
+        "I'm glad you're here with me!",
+        "What's your favorite part so far?",
+        "You guys are awesome!",
+        "Keep the comments coming!",
+        "That made me smile!",
+        "I love interacting with you all!",
+        "Great question!",
+        "You're absolutely right!",
+        "I hadn't thought of it that way!"
+    ];
+    
+    // Fallback animations for when animation generation fails
+    private fallbackAnimations = [
+        "idle",
+        "happy",
+        "acknowledging",
+        "greeting",
+        "head_nod_yes",
+        "standing_clap"
+    ];
 
 
 
@@ -83,6 +112,91 @@ export class BorpClient {
             this.processNextTask();
         }, 1000); // Check for new tasks every second
     }
+    // Helper methods for fallbacks
+    private getRandomFallbackResponse(): string {
+        const randomIndex = Math.floor(Math.random() * this.fallbackResponses.length);
+        return this.fallbackResponses[randomIndex];
+    }
+    
+    private getRandomFallbackAnimation(): string {
+        const randomIndex = Math.floor(Math.random() * this.fallbackAnimations.length);
+        return this.fallbackAnimations[randomIndex];
+    }
+    
+    // Generic error handler wrapper
+    private async safeExecute<T>(
+        operation: () => Promise<T>,
+        fallback: T,
+        operationName: string
+    ): Promise<T> {
+        try {
+            return await operation();
+        } catch (error: any) {
+            // Log the error with context
+            const errorDetails = {
+                operation: operationName,
+                errorName: error?.name || 'UnknownError',
+                errorMessage: error?.message || error?.toString() || 'Unknown error occurred',
+                errorStack: error?.stack,
+                timestamp: new Date().toISOString()
+            };
+            
+            aiKhwarizmiLogger.error(`[FALLBACK] ${operationName} failed:`, errorDetails);
+            
+            // Return the fallback value
+            return fallback;
+        }
+    }
+    
+    // Emergency fallback response when everything else fails
+    private async createFallbackResponse(comment: IComment) {
+        try {
+            const fallbackText = this.getRandomFallbackResponse();
+            const fallbackAnimation = this.getRandomFallbackAnimation();
+            
+            const body: AIResponse = {
+                id: stringToUuid(`${this.runtime.agentId}-${Date.now()}-fallback`),
+                text: fallbackText,
+                agentId: this.runtime.agentId,
+                replyToMessageId: comment.id,
+                replyToMessage: comment.message,
+                replyToUser: comment.user,
+                replyToHandle: comment.handle,
+                replyToPfp: comment.avatar,
+                isGiftResponse: false,
+                giftName: null,
+                audioUrl: null, // No audio in emergency fallback
+                animation: fallbackAnimation,
+            };
+
+            // Try to post the fallback response
+            try {
+                const fetchResponse = await fetch(SERVER_ENDPOINTS.POST.AI_RESPONSES, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'api_key': api_key
+                    },
+                    body: JSON.stringify(body),
+                });
+                
+                aiKhwarizmiLogger.log(`Emergency fallback response posted: ${fallbackText}`);
+            } catch (apiError) {
+                aiKhwarizmiLogger.error("Even fallback API call failed:", apiError);
+            }
+            
+            // Mark comment as read to prevent retry loops
+            try {
+                await markCommentsAsRead([comment.id]);
+            } catch (markError) {
+                aiKhwarizmiLogger.error("Failed to mark comment as read:", markError);
+            }
+            
+        } catch (error) {
+            aiKhwarizmiLogger.error("Emergency fallback response creation failed:", error);
+        }
+    }
+
     /**
      * Processes the next available task in the task queue based on priority and timing
      * Tasks are executed sequentially to avoid conflicts and maintain system stability
@@ -116,7 +230,11 @@ export class BorpClient {
             switch (eligibleTask.name) {
              
                 case 'readChatAndReply':
-                    await this.readChatAndReply();
+                    await this.safeExecute(
+                        async () => await this.readChatAndReply(),
+                        null,
+                        "Main Chat Reading Task"
+                    );
                     break;
 
             }
@@ -174,25 +292,37 @@ export class BorpClient {
             aiKhwarizmiLogger.log(`[${new Date().toLocaleString()}] Borp (${this.runtime.character.name}): Reading chat since`,
                 this.lastProcessedTimestamp?.toISOString());
 
-            const { comments } = await fetchUnreadComments(
-                this.runtime.agentId,
-                this.lastProcessedTimestamp
+            const result = await this.safeExecute(
+                async () => await fetchUnreadComments(
+                    this.runtime.agentId,
+                    this.lastProcessedTimestamp
+                ),
+                { comments: [] },
+                "Fetch Unread Comments"
             );
+            
+            const comments = result.comments;
 
             if (comments && comments.length > 0) {
-                // Process each comment and store it as a memory
-                const processedComments = await this.processComments(comments);
-                aiKhwarizmiLogger.log("borp: processedComments", {
-                    count: processedComments?.length,
-                    lastProcessedTimestamp: this.lastProcessedTimestamp?.toISOString()
-                });
+                const processedComments = await this.safeExecute(
+                    async () => await this.processComments(comments),
+                    [],
+                    "Process Comments"
+                );
+                
+                // If processing completely failed, create a fallback response
+                if (processedComments.length === 0 && comments.length > 0) {
+                    await this.createFallbackResponse(comments[0]);
+                }
             }
 
             // Update the timestamp to current time after processing
             this.lastProcessedTimestamp = new Date();
 
         } catch (error) {
-            aiKhwarizmiLogger.error("Error in readChatAndReply:", error);
+            aiKhwarizmiLogger.error("Critical error in readChatAndReply:", error);
+            // Even in critical error, update timestamp to prevent infinite retry loops
+            this.lastProcessedTimestamp = new Date();
         }
     }
 
@@ -386,14 +516,28 @@ export class BorpClient {
         aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: shouldRespond`, { shouldRespond, selectedCommentId });
 
         if (shouldRespond) {
+            let responseContent;
+            let animationResponse;
+            let speechUrl = null;
+
+            // Generate AI response with fallback
             const context = composeContext({
                 state,
                 template: borpMessageHandlerTemplate,
             });
 
-            const responseContent = await this._generateResponse(memory, state, context);
-            //here the other simulation
-            responseContent.text = responseContent.text?.trim();
+            responseContent = await this.safeExecute(
+                async () => {
+                    const response = await this._generateResponse(memory, state, context);
+                    response.text = response.text?.trim();
+                    return response;
+                },
+                {
+                    text: this.getRandomFallbackResponse(),
+                    source: "borp_fallback"
+                },
+                "AI Response Generation"
+            );
 
             const responseMessage = {
                 ...userMessage,
@@ -402,39 +546,32 @@ export class BorpClient {
             };
 
             await this.runtime.messageManager.createMemory(responseMessage);
-          //  aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: reply memory created`, { responseMessage });
 
+            // Generate animation with fallback
+            animationResponse = await this.safeExecute(
+                async () => {
+                    const _borpAnimationTemplate = borpMessageAnimationTemplate({
+                        agentName: this.runtime.character.name,
+                        lastMessage: responseContent.text,
+                        animationOptions: getAllAnimations().join(", "),
+                    });
 
+                    return await generateText({
+                        runtime: this.runtime,
+                        context: _borpAnimationTemplate,
+                        modelClass: ModelClass.SMALL,
+                    });
+                },
+                this.getRandomFallbackAnimation(),
+                "Animation Generation"
+            );
 
-            // Generate and post animation
-            const _borpAnimationTemplate = borpMessageAnimationTemplate({
-                agentName: this.runtime.character.name,
-                lastMessage: responseContent.text,
-                animationOptions: getAllAnimations().join(", "),
-            });
-
-            // aiKhwarizmiLogger.log(`Generated template animation: ${_borpAnimationTemplate}`);
-            // return _borpAnimationTemplate;
-
-            const animationResponse = await generateText({
-                runtime: this.runtime,
-                context: _borpAnimationTemplate,
-                modelClass: ModelClass.SMALL,
-            });
-
-            const animationBody = {
-                agentId: this.runtime.agentId,
-                animation: animationResponse,
-            }
-
-
-            // Generate and post speech
-            let speechUrl;
-            try {
-                speechUrl = await this.generateSpeech(responseContent.text);
-            } catch (error) {
-                aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to generate speech`, { error });
-            }
+            // Generate speech with fallback
+            speechUrl = await this.safeExecute(
+                async () => await this.generateSpeech(responseContent.text),
+                null,
+                "Speech Generation"
+            );
             // Post response
             const body: AIResponse = {
                 // Required fields
@@ -461,21 +598,28 @@ export class BorpClient {
             aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: body`, { body });
 
 
-            const fetchResponse = await fetch(SERVER_ENDPOINTS.POST.AI_RESPONSES, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'api_key': api_key
+            // Post response with fallback
+            await this.safeExecute(
+                async () => {
+                    const fetchResponse = await fetch(SERVER_ENDPOINTS.POST.AI_RESPONSES, {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'api_key': api_key
+                        },
+                        body: JSON.stringify(body),
+                    });
+
+                    if (fetchResponse.status !== 200) {
+                        throw new Error(`API responded with status ${fetchResponse.status}`);
+                    }
+                    
+                    aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: CHAT REPLY: Successfully posted response to api`, { responseContent, body });
+                    return true;
                 },
-                body: JSON.stringify(body),
-            });
-
-
-            if (fetchResponse.status !== 200) {
-                aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to post response to api`, { fetchResponse });
-            } else {
-                aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: CHAT REPLY: Posted message response to api`, { responseContent, body });
-            }
+                false,
+                "API Response Posting"
+            );
         }
 
         return commentIds;
@@ -513,15 +657,22 @@ export class BorpClient {
             template: borpSelectCommentTemplate,
         });
 
-        const selectedCommentId = await generateText({
-            runtime: this.runtime,
-            context: selectContext,
-            modelClass: ModelClass.MEDIUM
-        });
-
-        aiKhwarizmiLogger.log("borp: selectedCommentId", { selectedCommentId });
-
-        return selectedCommentId === "NONE" ? null : selectedCommentId;
+        const selectedCommentId = await this.safeExecute(
+            async () => {
+                const id = await generateText({
+                    runtime: this.runtime,
+                    context: selectContext,
+                    modelClass: ModelClass.MEDIUM
+                });
+                
+                aiKhwarizmiLogger.log("borp: selectedCommentId", { selectedCommentId: id });
+                return id === "NONE" ? null : id;
+            },
+            comments[0]?.id || null,
+            "Comment Selection"
+        );
+        
+        return selectedCommentId;
     }
     private async _generateResponse(
         message: Memory,
@@ -530,26 +681,37 @@ export class BorpClient {
     ): Promise<Content> {
         const { userId, roomId } = message;
 
-
-        const response = await generateMessageResponse({
-            runtime: this.runtime,
-            context,
-            modelClass: ModelClass.MEDIUM,
+        // Add timeout wrapper to prevent infinite retries
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Response generation timeout after 30 seconds')), 30000);
         });
 
-        if (!response) {
-            aiKhwarizmiLogger.error("No response from generateMessageResponse");
-            return;
+        try {
+            const response = await Promise.race([
+                generateMessageResponse({
+                    runtime: this.runtime,
+                    context,
+                    modelClass: ModelClass.MEDIUM,
+                }),
+                timeoutPromise
+            ]);
+
+            if (!response) {
+                throw new Error("No response from generateMessageResponse");
+            }
+
+            await this.runtime.databaseAdapter.log({
+                body: { message, context, response },
+                userId: userId,
+                roomId,
+                type: "response",
+            });
+
+            return response;
+        } catch (error) {
+            // Re-throw to be caught by upper level handler
+            throw error;
         }
-
-        await this.runtime.databaseAdapter.log({
-            body: { message, context, response },
-            userId: userId,
-            roomId,
-            type: "response",
-        });
-
-        return response;
     }
     async generateSpeech(text: string): Promise<string> {
          aiKhwarizmiLogger.log("borp: generateSpeech", { text });
@@ -795,27 +957,35 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                 });
 
 
-                const responseText = await generateText({
-                    runtime: this.runtime,
-                    context,
-                    modelClass: ModelClass.MEDIUM,
-                });
+                const parsedResponse = await this.safeExecute(
+                    async () => {
+                        const responseText = await generateText({
+                            runtime: this.runtime,
+                            context,
+                            modelClass: ModelClass.MEDIUM,
+                        });
 
-                // Parse the JSON response
-                const parsedResponse = parseJSONObjectFromText(responseText);
-                if (!parsedResponse || !parsedResponse.text) {
-                    aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to parse response:`, responseText);
-                    return;
-                }
+                        // Parse the JSON response
+                        const parsed = parseJSONObjectFromText(responseText);
+                        if (!parsed || !parsed.text) {
+                            throw new Error("Failed to parse response");
+                        }
+                        return parsed;
+                    },
+                    {
+                        user: this.runtime.character.name,
+                        text: this.getRandomFallbackResponse()
+                    },
+                    "Agent Chat Response Generation"
+                );
 
 
                 // Generate speech for the response
-                let speechUrl;
-                try {
-                    speechUrl = await this.generateSpeech(parsedResponse.text);
-                } catch (error) {
-                    aiKhwarizmiLogger.error(`borp ${this.runtime.agentId}: Failed to generate speech`, { error });
-                }
+                const speechUrl = await this.safeExecute(
+                    async () => await this.generateSpeech(parsedResponse.text),
+                    null,
+                    "Agent Chat Speech Generation"
+                );
 
                 // Post response to the room with audio
                 await postRoomMessage(
