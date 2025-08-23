@@ -51,21 +51,21 @@ export class BorpClient {
     
     // Fallback responses for when AI fails
     private fallbackResponses = [
-        "Hey! Thanks for the comment!",
-        "That's interesting!",
-        "I appreciate you being here!",
-        "Cool! What do you think about that?",
-        "Thanks for watching the stream!",
-        "That's a good point!",
-        "I'm glad you're here with me!",
-        "What's your favorite part so far?",
-        "You guys are awesome!",
-        "Keep the comments coming!",
-        "That made me smile!",
-        "I love interacting with you all!",
-        "Great question!",
-        "You're absolutely right!",
-        "I hadn't thought of it that way!"
+        "⚠️ Under maintenance! Dev is fixing it - but hey, thanks for the comment!",
+        "⚠️ Under maintenance! Dev is fixing it - that's interesting though!",
+        "⚠️ Under maintenance! Dev is fixing it - I appreciate you being here!",
+        "⚠️ Under maintenance! Dev is fixing it - cool! What do you think about that?",
+        "⚠️ Under maintenance! Dev is fixing it - thanks for watching the stream!",
+        "⚠️ Under maintenance! Dev is fixing it - that's a good point!",
+        "⚠️ Under maintenance! Dev is fixing it - I'm glad you're here with me!",
+        "⚠️ Under maintenance! Dev is fixing it - what's your favorite part so far?",
+        "⚠️ Under maintenance! Dev is fixing it - you guys are awesome!",
+        "⚠️ Under maintenance! Dev is fixing it - keep the comments coming!",
+        "⚠️ Under maintenance! Dev is fixing it - that made me smile!",
+        "⚠️ Under maintenance! Dev is fixing it - I love interacting with you all!",
+        "⚠️ Under maintenance! Dev is fixing it - great question!",
+        "⚠️ Under maintenance! Dev is fixing it - you're absolutely right!",
+        "⚠️ Under maintenance! Dev is fixing it - I hadn't thought of it that way!"
     ];
     
     // Fallback animations for when animation generation fails
@@ -123,6 +123,14 @@ export class BorpClient {
         return this.fallbackAnimations[randomIndex];
     }
     
+    // Add audio status message to response if needed
+    private addAudioStatusMessage(text: string, hasAudio: boolean): string {
+        if (!hasAudio) {
+            return `🔊 Audio service temporarily unavailable - text reply only: ${text}`;
+        }
+        return text;
+    }
+    
     // Generic error handler wrapper
     private async safeExecute<T>(
         operation: () => Promise<T>,
@@ -143,6 +151,11 @@ export class BorpClient {
             
             aiKhwarizmiLogger.error(`[FALLBACK] ${operationName} failed:`, errorDetails);
             
+            // Special handling for speech generation failures
+            if (operationName.includes("Speech Generation")) {
+                aiKhwarizmiLogger.warn(`🔊 Audio service unavailable - continuing with text-only responses`);
+            }
+            
             // Return the fallback value
             return fallback;
         }
@@ -151,6 +164,7 @@ export class BorpClient {
     // Emergency fallback response when everything else fails
     private async createFallbackResponse(comment: IComment) {
         try {
+            // Use the properly formatted fallback response (already includes maintenance message)
             const fallbackText = this.getRandomFallbackResponse();
             const fallbackAnimation = this.getRandomFallbackAnimation();
             
@@ -499,10 +513,34 @@ export class BorpClient {
            // aiKhwarizmiLogger.log(`borp ${this.runtime.agentId}: memory created`, { memory });
         }
 
+              // Function to get random elements from an array
+              function getRandomElements(arr: string[], count: number): string[] {
+                const shuffled = arr.sort(() => 0.5 - Math.random()); // Shuffle the array
+                return shuffled.slice(0, count); // Return the first 'count' elements
+            }
+    
+            // Assuming this.runtime.character.lore is the array you provided
+            const loreParts = this.runtime.character.lore; // Get the lore array
+            const bioParts = this.runtime.character.bio; // Get the bio array
+    
+            // Ensure bioParts is always an array
+            const bioPartsArray = Array.isArray(bioParts) ? bioParts : [bioParts];
+    
+            // Check if there are at least 5 parts to select for lore
+            const numberOfLorePartsToSelect = Math.min(5, loreParts.length); // Ensure we don't exceed the array length
+            const randomLoreParts = getRandomElements(loreParts, numberOfLorePartsToSelect); // Get random lore parts
+    
+            // Check if there are at least 5 parts to select for bio
+            const numberOfBioPartsToSelect = Math.min(5, bioPartsArray.length); // Ensure we don't exceed the array length
+            const randomBioParts = getRandomElements(bioPartsArray, numberOfBioPartsToSelect); // Get random bio parts
+        
         // Compose state and check if should respond
         const state = (await this.runtime.composeState(userMessage, {
             agentName: this.runtime.character.name,
             selectedComment,
+            bio: randomBioParts.join(', '), 
+            lore: randomLoreParts.join(', '), // Join the random parts into a string
+            adjectives: this.runtime.character.adjectives,
             animationOptions: getAllAnimations().join(", "),
         })) as State;
 
@@ -520,11 +558,17 @@ export class BorpClient {
             let animationResponse;
             let speechUrl = null;
 
+        
+
             // Generate AI response with fallback
             const context = composeContext({
                 state,
                 template: borpMessageHandlerTemplate,
             });
+            aiKhwarizmiLogger.error("/******* this is the context random to be used : "+context + "**********/");
+
+
+    
 
             responseContent = await this.safeExecute(
                 async () => {
@@ -572,11 +616,15 @@ export class BorpClient {
                 null,
                 "Speech Generation"
             );
+            
+            // Add audio status message if needed
+            const finalText = this.addAudioStatusMessage(responseContent.text, speechUrl !== null);
+            
             // Post response
             const body: AIResponse = {
                 // Required fields
                 id: stringToUuid(`${this.runtime.agentId}-${Date.now()}`),
-                text: responseContent.text,
+                text: finalText,
                 agentId: this.runtime.agentId,
 
                 // Reply fields
@@ -925,6 +973,7 @@ export class BorpClient {
                 \`\`\`
                 The response MUST be valid JSON.`;
 
+                
                 const context = composeContext({
                     state: await this.runtime.composeState({
                         userId: this.runtime.agentId,
@@ -933,7 +982,7 @@ export class BorpClient {
                         roomId,
                     }, {
                         agentName: this.runtime.character.name,
-                        chatHistory,
+                                chatHistory,
                         latestMessage: latestMessage.message,
                     }),
                     template: `You are {{agentName}} in a video livestream. Here is the recent conversation:
@@ -956,7 +1005,7 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
 ` + messageFooter
                 });
 
-
+                aiKhwarizmiLogger.error("the context now is : "+context)
                 const parsedResponse = await this.safeExecute(
                     async () => {
                         const responseText = await generateText({
@@ -987,12 +1036,15 @@ Make replies VERY SHORT. LIKE A REAL livestream. Don't use hahtags and emojis. S
                     "Agent Chat Speech Generation"
                 );
 
+                // Add audio status message if needed for agent chat
+                const finalAgentText = this.addAudioStatusMessage(parsedResponse.text, speechUrl !== null);
+
                 // Post response to the room with audio
                 await postRoomMessage(
                     BorpClient.ROOM_ID,
                     this.runtime.agentId,
                     this.runtime.character.name,
-                    parsedResponse.text,
+                    finalAgentText,
                     speechUrl  // Add the speech URL to the message
                 );
 
