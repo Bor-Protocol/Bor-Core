@@ -522,7 +522,7 @@ export class BorpClient {
             // Assuming this.runtime.character.lore is the array you provided
             const loreParts = this.runtime.character.lore; // Get the lore array
             const bioParts = this.runtime.character.bio; // Get the bio array
-    
+
             // Ensure bioParts is always an array
             const bioPartsArray = Array.isArray(bioParts) ? bioParts : [bioParts];
     
@@ -534,6 +534,7 @@ export class BorpClient {
             const numberOfBioPartsToSelect = Math.min(5, bioPartsArray.length); // Ensure we don't exceed the array length
             const randomBioParts = getRandomElements(bioPartsArray, numberOfBioPartsToSelect); // Get random bio parts
         
+
         // Compose state and check if should respond
         const state = (await this.runtime.composeState(userMessage, {
             agentName: this.runtime.character.name,

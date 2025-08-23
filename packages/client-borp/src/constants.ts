@@ -16,14 +16,23 @@ export const SERVER_ENDPOINTS = {
 
 
 export const getAllAnimations = () => {
-    return [
+    const allAnimations = [
         ...ANIMATION_OPTIONS.IDLE,
         ...ANIMATION_OPTIONS.HEAD,
         ...ANIMATION_OPTIONS.GESTURES,
         ...ANIMATION_OPTIONS.DANCING,
         ...ANIMATION_OPTIONS.SPECIAL
-        
     ];
+    
+    // Fisher-Yates shuffle
+    const shuffled = [...allAnimations];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    // Return first 20 items (or all if less than 20)
+    return shuffled.slice(0, 20);
 }
 
 

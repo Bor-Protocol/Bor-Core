@@ -52,7 +52,8 @@ export class AgentRuntime implements IAgentRuntime {
      * Default count for recent messages to be kept in memory.
      * @private
      */
-    readonly #conversationLength = 32 as number;
+    //the number of messages 
+    readonly #conversationLength = 10 as number;
     /**
      * The ID of the agent
      */
@@ -969,21 +970,18 @@ Text: ${attachment.text}
                         formattedCharacterMessageExamples
                     )
                     : "",
-            messageDirections:
-                this.character?.style?.all?.length > 0 ||
+                messageDirections:
                     this.character?.style?.chat.length > 0
                     ? addHeader(
                         "# Message Directions for " + this.character.name,
                         (() => {
-                            const all = this.character?.style?.all || [];
                             const chat = this.character?.style?.chat || [];
-                            const shuffled = [...all, ...chat].sort(
+                            const shuffled = [...chat].sort(
                                 () => 0.5 - Math.random()
                             );
-                            const allSliced = shuffled.slice(
-                                0,
-                                conversationLength / 2
-                            );
+                            // Use Math.min to ensure max of 5 items
+                            const maxItems = Math.min(5, conversationLength / 2);
+                            const allSliced = shuffled.slice(0, maxItems);
                             return allSliced.concat(allSliced).join("\n");
                         })()
                     )
