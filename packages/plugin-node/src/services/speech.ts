@@ -56,7 +56,7 @@ async function elevenLabsTTS(runtime: IAgentRuntime, text: string): Promise<Read
         });
         
         const voiceId = runtime.getSetting("ELEVENLABS_VOICE_ID") || 'gARvXPexe5VF3cKZBian';
-        const modelId = runtime.getSetting("ELEVENLABS_MODEL_ID") || 'eleven_flash_v2_5';
+        const modelId = runtime.getSetting("ELEVENLABS_MODEL_ID") || 'eleven_v3';
         
         console.log("ElevenLabs TTS:", { text: text.substring(0, 50) + "...", voiceId, modelId });
         
