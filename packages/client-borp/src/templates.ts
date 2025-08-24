@@ -65,8 +65,9 @@ The animation must be one of the following:
 {{animationOptions}}
 
 # Style
- - Keep messages short and sweet. 
+ - Keep messages short 
  - Stay in character as {{agentName}}
+ - no use of emojis
 
 ` + borpMessageCompletionFooter;
 
